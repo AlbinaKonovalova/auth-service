@@ -1,0 +1,32 @@
+version: v1
+
+plugins:
+  - name: go
+    out: pkg/pb
+    opt: paths=source_relative
+    path: bin/protoc-gen-go
+    strategy: directory
+
+  - name: go-grpc
+    out: pkg/pb
+    opt: paths=source_relative
+    path: bin/protoc-gen-go-grpc
+    strategy: directory
+
+  - name: grpc-gateway
+    out: pkg/pb
+    opt:
+      - generate_unbound_methods=true
+      - logtostderr=true
+      - paths=source_relative
+    path: bin/protoc-gen-grpc-gateway
+    strategy: directory
+
+  - name: openapiv2
+    out: api
+    opt:
+      - generate_unbound_methods=true
+      - allow_merge=true
+      - merge_file_name=openapi
+    path: bin/protoc-gen-openapiv2
+    strategy: all
