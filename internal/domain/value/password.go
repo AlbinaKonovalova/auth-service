@@ -2,7 +2,6 @@ package value
 
 import "errors"
 
-// MinPasswordLength — минимальная длина пароля.
 const MinPasswordLength = 8
 
 type Password struct {

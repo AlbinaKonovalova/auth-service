@@ -72,13 +72,11 @@ func seedAdmin(
 	rawEmail, rawPassword string,
 	logger *slog.Logger,
 ) error {
-	// Валидируем email через value object — нормализует и проверяет формат.
 	email, err := value.NewEmail(rawEmail)
 	if err != nil {
 		return fmt.Errorf("invalid email: %w", err)
 	}
 
-	// Валидируем пароль через value object — применяет доменные правила.
 	if _, err := value.NewPassword(rawPassword); err != nil {
 		return fmt.Errorf("invalid password: %w", err)
 	}
@@ -94,8 +92,6 @@ func seedAdmin(
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	// Идемпотентный INSERT: если пользователь уже существует — пропускаем,
-	// без предварительного SELECT (исключаем гонку).
 	var userID string
 	err = tx.QueryRowContext(ctx, `
 		INSERT INTO users (email, password_hash, is_active)
@@ -108,7 +104,6 @@ func seedAdmin(
 		return fmt.Errorf("upsert user: %w", err)
 	}
 
-	// Получаем role_id для admin.
 	var roleID string
 	err = tx.QueryRowContext(ctx,
 		`SELECT id FROM roles WHERE code = 'admin'`,
@@ -120,7 +115,6 @@ func seedAdmin(
 		return fmt.Errorf("get admin role: %w", err)
 	}
 
-	// Назначаем роль — ON CONFLICT делает это идемпотентным.
 	_, err = tx.ExecContext(ctx,
 		`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
 		userID, roleID,

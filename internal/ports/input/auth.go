@@ -20,8 +20,6 @@ type LogoutInput struct {
 	RawRefreshToken string
 }
 
-// AuthUseCase — входящий порт для auth сценариев.
-// Login и Refresh возвращают rawRefreshToken отдельно от основного результата.
 type AuthUseCase interface {
 	Login(ctx context.Context, in LoginInput) (result dto.LoginResult, rawRefreshToken string, err error)
 	Refresh(ctx context.Context, in RefreshInput) (result dto.RefreshResult, rawRefreshToken string, err error)

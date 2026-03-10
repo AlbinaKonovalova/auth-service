@@ -29,7 +29,6 @@ func NewPermissionResolver(
 	}
 }
 
-// Resolve возвращает role codes и permission codes пользователя.
 func (r *PermissionResolver) Resolve(ctx context.Context, userID uuid.UUID) (roles []string, perms []string, err error) {
 	userRoles, err := r.userRoles.FindByUserID(ctx, userID)
 	if err != nil {
@@ -60,7 +59,6 @@ func (r *PermissionResolver) Resolve(ctx context.Context, userID uuid.UUID) (rol
 		return roles, nil, nil
 	}
 
-	// Дедупликация permission IDs
 	seen := make(map[uuid.UUID]struct{}, len(rolePerms))
 	permIDs := make([]uuid.UUID, 0, len(rolePerms))
 	for _, rp := range rolePerms {

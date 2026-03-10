@@ -12,7 +12,6 @@ import (
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
 )
 
-// NewGatewayMux создаёт grpc-gateway mux и регистрирует AuthService.
 func NewGatewayMux(ctx context.Context, svc pb.AuthServiceServer) (*runtime.ServeMux, error) {
 	mux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -41,7 +40,6 @@ func NewGatewayMux(ctx context.Context, svc pb.AuthServiceServer) (*runtime.Serv
 	return mux, nil
 }
 
-// forwardCookieHeader пробрасывает set-cookie из grpc metadata в HTTP response.
 func forwardCookieHeader(ctx context.Context, w http.ResponseWriter, _ proto.Message) error {
 	md, ok := runtime.ServerMetadataFromContext(ctx)
 	if !ok {

@@ -3,17 +3,11 @@ package controller
 import (
 	"errors"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// domainErrToStatus maps domain errors to gRPC status codes.
-// Example:
-//
-//	domain.ErrInvalidCredentials -> codes.Unauthenticated
-//	domain.ErrNotFound           -> codes.NotFound
-//	domain.ErrAccessDenied       -> codes.PermissionDenied
 func domainErrToStatus(err error) error {
 	switch {
 	case errors.Is(err, domain.ErrInvalidCredentials):

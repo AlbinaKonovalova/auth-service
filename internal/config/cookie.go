@@ -2,7 +2,6 @@ package config
 
 import "time"
 
-// CookieConfig содержит настройки refresh token cookie.
 type CookieConfig struct {
 	Name     string        `yaml:"name"`
 	Path     string        `yaml:"path"`
@@ -12,7 +11,6 @@ type CookieConfig struct {
 	TTL      time.Duration `yaml:"ttl"`
 }
 
-// IsSecure возвращает значение Secure с дефолтом true.
 func (c CookieConfig) IsSecure() bool {
 	if c.Secure == nil {
 		return true

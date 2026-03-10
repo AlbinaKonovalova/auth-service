@@ -18,16 +18,13 @@ import (
 	authservicepkg "github.com/AlbinaKonovalova/auth-service/pkg/authservice"
 )
 
-// App — собранное приложение.
 type App struct {
 	server *httpinfra.Server
 	db     *sql.DB
 	logger *slog.Logger
 }
 
-// New собирает все зависимости и возвращает готовый App.
 func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
-	// --- Postgres ---
 	db, err := pginfra.NewConnection(pginfra.Config{
 		URL:             cfg.Database.URL,
 		MaxOpenConns:    cfg.Database.MaxOpenConns,
@@ -38,7 +35,6 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		return nil, fmt.Errorf("connect postgres: %w", err)
 	}
 
-	// --- Repositories ---
 	userRepo := pgadapter.NewUserRepository(db)
 	roleRepo := pgadapter.NewRoleRepository(db)
 	permRepo := pgadapter.NewPermissionRepository(db)
@@ -47,7 +43,6 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	sessionRepo := pgadapter.NewRefreshSessionRepository(db)
 	txManager := pgadapter.NewTxManager(db)
 
-	// --- Auth adapters ---
 	hasher := authadapter.NewPasswordHasher(authadapter.Argon2Params{
 		Memory:      cfg.Argon2.Memory,
 		Iterations:  cfg.Argon2.Iterations,
@@ -64,7 +59,6 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	clockImpl := authadapter.NewClock()
 	uuidGen := authadapter.NewUUIDGenerator()
 
-	// --- Usecases ---
 	resolver := common.NewPermissionResolver(userRoleRepo, rolePermRepo, roleRepo, permRepo)
 
 	loginUC := auth.NewLoginUseCase(userRepo, sessionRepo, hasher, tokenProvider, txManager, clockImpl, uuidGen, resolver)
@@ -74,10 +68,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 
 	authService := auth.NewAuthService(loginUC, refreshUC, logoutUC, meUC)
 
-	// --- Controller ---
 	ctrl := controller.NewAuthServiceController(authService, cfg.Cookie)
 
-	// --- HTTP ---
 	ctx := context.Background()
 	gwMux, err := httpinfra.NewGatewayMux(ctx, ctrl)
 	if err != nil {

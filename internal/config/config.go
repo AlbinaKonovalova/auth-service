@@ -38,7 +38,6 @@ type LogConfig struct {
 	Format string `yaml:"format"`
 }
 
-// Load загружает конфигурацию из файла и переменных окружения
 func Load(path string) (*Config, error) {
 	cfg := &Config{}
 
@@ -46,10 +45,8 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to load config from file: %w", err)
 	}
 
-	// Устанавливаем значения по умолчанию
 	cfg.setDefaults()
 
-	// Валидируем
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("config validation failed: %w", err)
 	}
@@ -91,7 +88,6 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// Database
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		c.Database.URL = url
 	}
@@ -112,7 +108,6 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// Log
 	if level := os.Getenv("LOG_LEVEL"); level != "" {
 		c.Log.Level = level
 	}

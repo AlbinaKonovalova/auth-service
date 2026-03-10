@@ -1,6 +1,5 @@
 package config
 
-// Argon2Config содержит параметры argon2id для хеширования паролей.
 type Argon2Config struct {
 	Memory      uint32 `yaml:"memory"`
 	Iterations  uint32 `yaml:"iterations"`

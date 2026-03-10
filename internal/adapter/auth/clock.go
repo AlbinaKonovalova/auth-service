@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Clock реализует output.Clock.
 type Clock struct{}
 
 func NewClock() *Clock {
@@ -17,7 +16,6 @@ func (Clock) Now() time.Time {
 	return time.Now()
 }
 
-// UUIDGenerator реализует output.UUIDGenerator.
 type UUIDGenerator struct{}
 
 func NewUUIDGenerator() *UUIDGenerator {

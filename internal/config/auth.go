@@ -2,7 +2,6 @@ package config
 
 import "time"
 
-// AuthConfig содержит настройки JWT и токенов.
 type AuthConfig struct {
 	JWTSecret         string        `yaml:"jwt_secret"`
 	AccessTokenTTL    time.Duration `yaml:"access_token_ttl"`

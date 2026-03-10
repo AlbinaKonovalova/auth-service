@@ -15,7 +15,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
 )
 
-// refreshTTL — TTL refresh сессии. Будет вынесен в config на этапе bootstrap.
 const refreshTTL = 7 * 24 * time.Hour
 
 type LoginUseCase struct {

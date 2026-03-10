@@ -12,10 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// requestIDKey — ключ для request id в context.
 type requestIDKey struct{}
 
-// Server wraps net/http.Server with graceful shutdown.
 type Server struct {
 	server *http.Server
 	logger *slog.Logger
@@ -51,7 +49,6 @@ func withCommonMiddleware(next http.Handler, logger *slog.Logger, allowedOrigins
 	)
 }
 
-// logSkipPrefixes — маршруты которые не логируются.
 var logSkipPrefixes = []string{
 	"/healthz",
 	"/swagger",
@@ -79,7 +76,6 @@ func requestIDMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// RequestIDFromContext извлекает request id из context.
 func RequestIDFromContext(ctx context.Context) string {
 	id, _ := ctx.Value(requestIDKey{}).(string)
 	return id
@@ -122,8 +118,6 @@ func recoveryMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
 	})
 }
 
-// corsMiddleware разрешает только origin'ы из allowedOrigins.
-// Если список пустой — CORS заголовки не выставляются.
 func corsMiddleware(allowedOrigins []string, next http.Handler) http.Handler {
 	originSet := make(map[string]struct{}, len(allowedOrigins))
 	for _, o := range allowedOrigins {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 )

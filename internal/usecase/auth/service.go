@@ -8,7 +8,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-// AuthService объединяет отдельные usecase в единую реализацию input.AuthUseCase.
 type AuthService struct {
 	login   *LoginUseCase
 	refresh *RefreshUseCase

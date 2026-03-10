@@ -18,13 +18,10 @@ import (
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
 )
 
-// errCookieMissing — cookie отсутствует в запросе (нормальная ситуация для logout).
 var errCookieMissing = errors.New("cookie missing")
 
-// errCookieMalformed — metadata битая или header не парсится.
 var errCookieMalformed = errors.New("cookie malformed")
 
-// AuthServiceController реализует pb.AuthServiceServer.
 type AuthServiceController struct {
 	pb.UnimplementedAuthServiceServer
 	auth   input.AuthUseCase
@@ -90,13 +87,10 @@ func (c *AuthServiceController) Logout(ctx context.Context, _ *pb.LogoutRequest)
 			return nil, domainErrToStatus(logoutErr)
 		}
 	case errors.Is(err, errCookieMissing):
-		// Cookie нет — logout идемпотентен, продолжаем к clear.
 	default:
-		// Битый header — сообщаем клиенту.
 		return nil, status.Error(codes.InvalidArgument, "malformed cookie header")
 	}
 
-	// Независимо от наличия cookie — всегда очищаем её на клиенте.
 	if err := c.clearRefreshCookie(ctx); err != nil {
 		return nil, status.Error(codes.Internal, "failed to clear cookie")
 	}
@@ -105,7 +99,6 @@ func (c *AuthServiceController) Logout(ctx context.Context, _ *pb.LogoutRequest)
 }
 
 func (c *AuthServiceController) Me(ctx context.Context, _ *pb.MeRequest) (*pb.MeResponse, error) {
-	// Claims кладёт auth middleware до вызова controller.
 	claims, ok := ctx.Value(value.ClaimsContextKey{}).(value.AccessClaims)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "missing auth claims")
@@ -128,8 +121,6 @@ func (c *AuthServiceController) Me(ctx context.Context, _ *pb.MeRequest) (*pb.Me
 func (c *AuthServiceController) Healthz(_ context.Context, _ *pb.HealthzRequest) (*pb.HealthzResponse, error) {
 	return &pb.HealthzResponse{Status: "ok"}, nil
 }
-
-// --- cookie helpers ---
 
 func (c *AuthServiceController) setRefreshCookie(ctx context.Context, raw string) error {
 	cookie := &http.Cookie{
@@ -159,8 +150,6 @@ func (c *AuthServiceController) clearRefreshCookie(ctx context.Context) error {
 	return grpc.SetHeader(ctx, metadata.Pairs("set-cookie", cookie.String()))
 }
 
-// readRefreshCookie читает refresh token из входящего cookie header.
-// Возвращает errCookieMissing если cookie нет, errCookieMalformed если metadata/header битые.
 func (c *AuthServiceController) readRefreshCookie(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

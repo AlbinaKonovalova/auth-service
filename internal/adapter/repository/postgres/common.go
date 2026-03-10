@@ -6,14 +6,12 @@ import (
 	"fmt"
 )
 
-// DBTX abstracts *sql.DB and *sql.Tx so repositories can work with both.
 type DBTX interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 }
 
-// TxManager реализует output.TxManager поверх *sql.DB.
 type TxManager struct {
 	db *sql.DB
 }
