@@ -4,13 +4,12 @@ import (
 	"context"
 	"flag"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
-	httpinfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/http"
+	"github.com/AlbinaKonovalova/auth-service/internal/infrastructure/app/authservice"
 )
 
 func main() {
@@ -28,18 +27,14 @@ func main() {
 
 	logger = setupLogger(cfg.Log.Level)
 
-	// TODO: infrastructure wiring (postgres, repos, usecases, controller) goes here
-
-	server := httpinfra.NewServer(
-		cfg.Server.Port,
-		cfg.Server.ReadTimeout,
-		cfg.Server.WriteTimeout,
-		logger,
-		nil,
-	)
+	app, err := authservice.New(cfg, logger)
+	if err != nil {
+		logger.Error("failed to initialize app", slog.Any("error", err))
+		os.Exit(1)
+	}
 
 	go func() {
-		if err := server.Start(); err != nil && err != http.ErrServerClosed {
+		if err := app.Run(); err != nil {
 			logger.Error("server error", slog.Any("error", err))
 			os.Exit(1)
 		}
@@ -54,7 +49,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
 	defer cancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := app.Shutdown(ctx); err != nil {
 		logger.Error("server forced to shutdown", slog.Any("error", err))
 	}
 

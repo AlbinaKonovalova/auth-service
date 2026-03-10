@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package authservice.v1;
+
+option go_package = "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1;authservicev1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Auth Service API"
+    version: "1.0"
+    description: "Authentication and authorization service for admin platform"
+  }
+  security_definitions: {
+    security: {
+      key: "Bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT access token. Format: Bearer {token}"
+      }
+    }
+  }
+  consumes: "application/json"
+  produces: "application/json"
+};
+
+// AuthService provides authentication and authorization operations.
+service AuthService {
+  // Login authenticates a user and returns an access token.
+  // Refresh token is set as httpOnly cookie.
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/auth/login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Login"
+      description: "Authenticate user by email and password"
+      tags: ["auth"]
+    };
+  }
+
+  // Refresh rotates the refresh token and returns a new access token.
+  // Reads refresh token from httpOnly cookie, sets new cookie on response.
+  rpc Refresh(RefreshRequest) returns (RefreshResponse) {
+    option (google.api.http) = {
+      post: "/auth/refresh"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Refresh session"
+      description: "Rotate refresh token and issue new access token"
+      tags: ["auth"]
+    };
+  }
+
+  // Logout revokes the refresh session.
+  // Reads refresh token from httpOnly cookie, clears cookie on response.
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/auth/logout"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Logout"
+      description: "Revoke refresh session"
+      tags: ["auth"]
+    };
+  }
+
+  // Me returns the current authenticated user.
+  rpc Me(MeRequest) returns (MeResponse) {
+    option (google.api.http) = {
+      get: "/auth/me"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Current user"
+      description: "Get current authenticated user info"
+      tags: ["auth"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // Healthz returns service health status.
+  rpc Healthz(HealthzRequest) returns (HealthzResponse) {
+    option (google.api.http) = {
+      get: "/healthz"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Health check"
+      tags: ["system"]
+    };
+  }
+}
+
+// Login
+
+message LoginRequest {
+  string email    = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string       access_token = 1;
+  string       token_type   = 2;
+  int64        expires_in   = 3;
+  UserInfo     user         = 4;
+}
+
+// Refresh
+
+message RefreshRequest {}
+
+message RefreshResponse {
+  string access_token = 1;
+  string token_type   = 2;
+  int64  expires_in   = 3;
+}
+
+// Logout
+
+message LogoutRequest {}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
+// Me
+
+message MeRequest {}
+
+message MeResponse {
+  string   id          = 1;
+  string   email       = 2;
+  bool     is_active   = 3;
+  repeated string roles       = 4;
+  repeated string permissions = 5;
+}
+
+// Healthz
+
+message HealthzRequest {}
+
+message HealthzResponse {
+  string status = 1;
+}
+
+// Shared messages
+
+message UserInfo {
+  string   id          = 1;
+  string   email       = 2;
+  bool     is_active   = 3;
+  repeated string roles       = 4;
+  repeated string permissions = 5;
+}

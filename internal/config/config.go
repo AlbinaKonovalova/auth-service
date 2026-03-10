@@ -13,6 +13,10 @@ type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
 	Log      LogConfig      `yaml:"log"`
+	Cookie   CookieConfig   `yaml:"cookie"`
+	Auth     AuthConfig     `yaml:"auth"`
+	Argon2   Argon2Config   `yaml:"argon2"`
+	CORS     CORSConfig     `yaml:"cors"`
 }
 
 type ServerConfig struct {
@@ -34,6 +38,7 @@ type LogConfig struct {
 	Format string `yaml:"format"`
 }
 
+// Load загружает конфигурацию из файла и переменных окружения
 func Load(path string) (*Config, error) {
 	cfg := &Config{}
 
@@ -41,8 +46,10 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to load config from file: %w", err)
 	}
 
+	// Устанавливаем значения по умолчанию
 	cfg.setDefaults()
 
+	// Валидируем
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("config validation failed: %w", err)
 	}
@@ -62,7 +69,7 @@ func (c *Config) loadFromFile(path string) error {
 }
 
 func (c *Config) loadFromEnv() {
-
+	// Server
 	if port := os.Getenv("SERVER_PORT"); port != "" {
 		if p, err := strconv.Atoi(port); err == nil {
 			c.Server.Port = p
@@ -84,6 +91,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
+	// Database
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		c.Database.URL = url
 	}
@@ -104,6 +112,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
+	// Log
 	if level := os.Getenv("LOG_LEVEL"); level != "" {
 		c.Log.Level = level
 	}
@@ -127,7 +136,7 @@ func (c *Config) setDefaults() {
 	}
 
 	if c.Database.URL == "" {
-		c.Database.URL = "postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable"
+		c.Database.URL = "postgres://postgres:postgres@localhost:5432/<base>?sslmode=disable"
 	}
 	if c.Database.MaxOpenConns == 0 {
 		c.Database.MaxOpenConns = 25
@@ -145,16 +154,60 @@ func (c *Config) setDefaults() {
 	if c.Log.Format == "" {
 		c.Log.Format = "json"
 	}
+
+	d := defaultCookieConfig()
+	if c.Cookie.Name == "" {
+		c.Cookie.Name = d.Name
+	}
+	if c.Cookie.Path == "" {
+		c.Cookie.Path = d.Path
+	}
+	if c.Cookie.SameSite == "" {
+		c.Cookie.SameSite = d.SameSite
+	}
+	if c.Cookie.TTL == 0 {
+		c.Cookie.TTL = d.TTL
+	}
+
+	if c.CORS.AllowedOrigins == nil {
+		c.CORS.AllowedOrigins = defaultCORSConfig().AllowedOrigins
+	}
+
+	da := defaultAuthConfig()
+	if c.Auth.AccessTokenTTL == 0 {
+		c.Auth.AccessTokenTTL = da.AccessTokenTTL
+	}
+	if c.Auth.RefreshTokenBytes == 0 {
+		c.Auth.RefreshTokenBytes = da.RefreshTokenBytes
+	}
+
+	darg := defaultArgon2Config()
+	if c.Argon2.Memory == 0 {
+		c.Argon2.Memory = darg.Memory
+	}
+	if c.Argon2.Iterations == 0 {
+		c.Argon2.Iterations = darg.Iterations
+	}
+	if c.Argon2.Parallelism == 0 {
+		c.Argon2.Parallelism = darg.Parallelism
+	}
+	if c.Argon2.SaltLength == 0 {
+		c.Argon2.SaltLength = darg.SaltLength
+	}
+	if c.Argon2.KeyLength == 0 {
+		c.Argon2.KeyLength = darg.KeyLength
+	}
 }
 
 func (c *Config) validate() error {
 	if c.Server.Port <= 0 || c.Server.Port > 65535 {
 		return fmt.Errorf("invalid server port: %d", c.Server.Port)
 	}
-
 	if c.Database.URL == "" {
 		return fmt.Errorf("database URL is required")
 	}
-
+	if c.Auth.JWTSecret == "" {
+		return fmt.Errorf("auth.jwt_secret is required")
+	}
 	return nil
 }
