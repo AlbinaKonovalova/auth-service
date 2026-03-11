@@ -226,13 +226,6 @@
         "accessToken": {
           "type": "string"
         },
-        "tokenType": {
-          "type": "string"
-        },
-        "expiresIn": {
-          "type": "string",
-          "format": "int64"
-        },
         "user": {
           "$ref": "#/definitions/v1UserInfo"
         }
@@ -284,12 +277,8 @@
         "accessToken": {
           "type": "string"
         },
-        "tokenType": {
-          "type": "string"
-        },
-        "expiresIn": {
-          "type": "string",
-          "format": "int64"
+        "user": {
+          "$ref": "#/definitions/v1UserInfo"
         }
       }
     },
@@ -298,12 +287,6 @@
       "properties": {
         "id": {
           "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "isActive": {
-          "type": "boolean"
         },
         "roles": {
           "type": "array",

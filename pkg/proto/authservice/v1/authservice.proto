@@ -110,10 +110,8 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string       access_token = 1;
-  string       token_type   = 2;
-  int64        expires_in   = 3;
-  UserInfo     user         = 4;
+  string   access_token = 1;
+  UserInfo user         = 2;
 }
 
 // Refresh
@@ -121,9 +119,8 @@ message LoginResponse {
 message RefreshRequest {}
 
 message RefreshResponse {
-  string access_token = 1;
-  string token_type   = 2;
-  int64  expires_in   = 3;
+  string   access_token = 1;
+  UserInfo user         = 2;
 }
 
 // Logout
@@ -139,9 +136,9 @@ message LogoutResponse {
 message MeRequest {}
 
 message MeResponse {
-  string   id          = 1;
-  string   email       = 2;
-  bool     is_active   = 3;
+  string          id          = 1;
+  string          email       = 2;
+  bool            is_active   = 3;
   repeated string roles       = 4;
   repeated string permissions = 5;
 }
@@ -157,9 +154,7 @@ message HealthzResponse {
 // Shared messages
 
 message UserInfo {
-  string   id          = 1;
-  string   email       = 2;
-  bool     is_active   = 3;
-  repeated string roles       = 4;
-  repeated string permissions = 5;
+  string          id          = 1;
+  repeated string roles       = 2;
+  repeated string permissions = 3;
 }

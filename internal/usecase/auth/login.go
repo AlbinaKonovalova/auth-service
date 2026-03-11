@@ -88,7 +88,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, in input.LoginInput) (dto.Log
 		Permissions: perms,
 	}
 
-	accessToken, expiresIn, err := uc.tokens.GenerateAccessToken(ctx, claims)
+	accessToken, _, err := uc.tokens.GenerateAccessToken(ctx, claims)
 	if err != nil {
 		return dto.LoginResult{}, "", fmt.Errorf("generate access token: %w", err)
 	}
@@ -122,12 +122,8 @@ func (uc *LoginUseCase) Login(ctx context.Context, in input.LoginInput) (dto.Log
 		rawRefresh = raw
 		result = dto.LoginResult{
 			AccessToken: accessToken,
-			TokenType:   "Bearer",
-			ExpiresIn:   expiresIn,
 			User: dto.CurrentUser{
 				ID:          user.ID,
-				Email:       user.Email,
-				IsActive:    user.IsActive,
 				Roles:       roles,
 				Permissions: perms,
 			},

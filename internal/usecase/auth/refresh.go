@@ -91,7 +91,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 			Permissions: perms,
 		}
 
-		accessToken, expiresIn, err := uc.tokens.GenerateAccessToken(ctx, claims)
+		accessToken, _, err := uc.tokens.GenerateAccessToken(ctx, claims)
 		if err != nil {
 			return fmt.Errorf("generate access token: %w", err)
 		}
@@ -120,8 +120,11 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 		rawRefresh = raw
 		result = dto.RefreshResult{
 			AccessToken: accessToken,
-			TokenType:   "Bearer",
-			ExpiresIn:   expiresIn,
+			User: dto.CurrentUser{
+				ID:          user.ID,
+				Roles:       roles,
+				Permissions: perms,
+			},
 		}
 
 		return nil

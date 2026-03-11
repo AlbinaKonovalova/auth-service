@@ -8,8 +8,6 @@ import (
 func loginResultToProto(result dto.LoginResult) *pb.LoginResponse {
 	return &pb.LoginResponse{
 		AccessToken: result.AccessToken,
-		TokenType:   result.TokenType,
-		ExpiresIn:   result.ExpiresIn,
 		User:        currentUserToProto(result.User),
 	}
 }
@@ -17,8 +15,6 @@ func loginResultToProto(result dto.LoginResult) *pb.LoginResponse {
 func currentUserToProto(u dto.CurrentUser) *pb.UserInfo {
 	return &pb.UserInfo{
 		Id:          u.ID.String(),
-		Email:       u.Email,
-		IsActive:    u.IsActive,
 		Roles:       u.Roles,
 		Permissions: u.Permissions,
 	}
@@ -27,7 +23,6 @@ func currentUserToProto(u dto.CurrentUser) *pb.UserInfo {
 func refreshResultToProto(result dto.RefreshResult) *pb.RefreshResponse {
 	return &pb.RefreshResponse{
 		AccessToken: result.AccessToken,
-		TokenType:   result.TokenType,
-		ExpiresIn:   result.ExpiresIn,
+		User:        currentUserToProto(result.User),
 	}
 }

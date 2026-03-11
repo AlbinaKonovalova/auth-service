@@ -78,9 +78,7 @@ func (x *LoginRequest) GetPassword() string {
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	TokenType     string                 `protobuf:"bytes,2,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
-	ExpiresIn     int64                  `protobuf:"varint,3,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
-	User          *UserInfo              `protobuf:"bytes,4,opt,name=user,proto3" json:"user,omitempty"`
+	User          *UserInfo              `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -120,20 +118,6 @@ func (x *LoginResponse) GetAccessToken() string {
 		return x.AccessToken
 	}
 	return ""
-}
-
-func (x *LoginResponse) GetTokenType() string {
-	if x != nil {
-		return x.TokenType
-	}
-	return ""
-}
-
-func (x *LoginResponse) GetExpiresIn() int64 {
-	if x != nil {
-		return x.ExpiresIn
-	}
-	return 0
 }
 
 func (x *LoginResponse) GetUser() *UserInfo {
@@ -182,8 +166,7 @@ func (*RefreshRequest) Descriptor() ([]byte, []int) {
 type RefreshResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	TokenType     string                 `protobuf:"bytes,2,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
-	ExpiresIn     int64                  `protobuf:"varint,3,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
+	User          *UserInfo              `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -225,18 +208,11 @@ func (x *RefreshResponse) GetAccessToken() string {
 	return ""
 }
 
-func (x *RefreshResponse) GetTokenType() string {
+func (x *RefreshResponse) GetUser() *UserInfo {
 	if x != nil {
-		return x.TokenType
+		return x.User
 	}
-	return ""
-}
-
-func (x *RefreshResponse) GetExpiresIn() int64 {
-	if x != nil {
-		return x.ExpiresIn
-	}
-	return 0
+	return nil
 }
 
 type LogoutRequest struct {
@@ -514,10 +490,8 @@ func (x *HealthzResponse) GetStatus() string {
 type UserInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	IsActive      bool                   `protobuf:"varint,3,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	Roles         []string               `protobuf:"bytes,4,rep,name=roles,proto3" json:"roles,omitempty"`
-	Permissions   []string               `protobuf:"bytes,5,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	Roles         []string               `protobuf:"bytes,2,rep,name=roles,proto3" json:"roles,omitempty"`
+	Permissions   []string               `protobuf:"bytes,3,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -559,20 +533,6 @@ func (x *UserInfo) GetId() string {
 	return ""
 }
 
-func (x *UserInfo) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *UserInfo) GetIsActive() bool {
-	if x != nil {
-		return x.IsActive
-	}
-	return false
-}
-
 func (x *UserInfo) GetRoles() []string {
 	if x != nil {
 		return x.Roles
@@ -594,21 +554,14 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	" authservice/v1/authservice.proto\x12\x0eauthservice.v1\x1a\x1cgoogle/api/annotations.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x9e\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"`\n" +
 	"\rLoginResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1d\n" +
-	"\n" +
-	"token_type\x18\x02 \x01(\tR\ttokenType\x12\x1d\n" +
-	"\n" +
-	"expires_in\x18\x03 \x01(\x03R\texpiresIn\x12,\n" +
-	"\x04user\x18\x04 \x01(\v2\x18.authservice.v1.UserInfoR\x04user\"\x10\n" +
-	"\x0eRefreshRequest\"r\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12,\n" +
+	"\x04user\x18\x02 \x01(\v2\x18.authservice.v1.UserInfoR\x04user\"\x10\n" +
+	"\x0eRefreshRequest\"b\n" +
 	"\x0fRefreshResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1d\n" +
-	"\n" +
-	"token_type\x18\x02 \x01(\tR\ttokenType\x12\x1d\n" +
-	"\n" +
-	"expires_in\x18\x03 \x01(\x03R\texpiresIn\"\x0f\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12,\n" +
+	"\x04user\x18\x02 \x01(\v2\x18.authservice.v1.UserInfoR\x04user\"\x0f\n" +
 	"\rLogoutRequest\"*\n" +
 	"\x0eLogoutResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\v\n" +
@@ -622,13 +575,11 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	"\vpermissions\x18\x05 \x03(\tR\vpermissions\"\x10\n" +
 	"\x0eHealthzRequest\")\n" +
 	"\x0fHealthzResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\"\x85\x01\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"R\n" +
 	"\bUserInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1b\n" +
-	"\tis_active\x18\x03 \x01(\bR\bisActive\x12\x14\n" +
-	"\x05roles\x18\x04 \x03(\tR\x05roles\x12 \n" +
-	"\vpermissions\x18\x05 \x03(\tR\vpermissions2\xf4\x05\n" +
+	"\x05roles\x18\x02 \x03(\tR\x05roles\x12 \n" +
+	"\vpermissions\x18\x03 \x03(\tR\vpermissions2\xf4\x05\n" +
 	"\vAuthService\x12\x95\x01\n" +
 	"\x05Login\x12\x1c.authservice.v1.LoginRequest\x1a\x1d.authservice.v1.LoginResponse\"O\x92A6\n" +
 	"\x04auth\x12\x05Login\x1a'Authenticate user by email and password\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/auth/login\x12\xaf\x01\n" +
@@ -677,21 +628,22 @@ var file_authservice_v1_authservice_proto_goTypes = []any{
 }
 var file_authservice_v1_authservice_proto_depIdxs = []int32{
 	10, // 0: authservice.v1.LoginResponse.user:type_name -> authservice.v1.UserInfo
-	0,  // 1: authservice.v1.AuthService.Login:input_type -> authservice.v1.LoginRequest
-	2,  // 2: authservice.v1.AuthService.Refresh:input_type -> authservice.v1.RefreshRequest
-	4,  // 3: authservice.v1.AuthService.Logout:input_type -> authservice.v1.LogoutRequest
-	6,  // 4: authservice.v1.AuthService.Me:input_type -> authservice.v1.MeRequest
-	8,  // 5: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
-	1,  // 6: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
-	3,  // 7: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
-	5,  // 8: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
-	7,  // 9: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
-	9,  // 10: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
-	6,  // [6:11] is the sub-list for method output_type
-	1,  // [1:6] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	10, // 1: authservice.v1.RefreshResponse.user:type_name -> authservice.v1.UserInfo
+	0,  // 2: authservice.v1.AuthService.Login:input_type -> authservice.v1.LoginRequest
+	2,  // 3: authservice.v1.AuthService.Refresh:input_type -> authservice.v1.RefreshRequest
+	4,  // 4: authservice.v1.AuthService.Logout:input_type -> authservice.v1.LogoutRequest
+	6,  // 5: authservice.v1.AuthService.Me:input_type -> authservice.v1.MeRequest
+	8,  // 6: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
+	1,  // 7: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
+	3,  // 8: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
+	5,  // 9: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
+	7,  // 10: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
+	9,  // 11: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_authservice_v1_authservice_proto_init() }
