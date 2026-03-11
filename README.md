@@ -1,29 +1,14 @@
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# Auth Service
 
-*.test
+HTTP/JSON сервис аутентификации и авторизации для админки.
 
-*.out
-coverage.*
-*.coverprofile
-profile.cov
+Текущий статус: MVP для фронта.
 
-# vendor/
-
-go.work
-go.work.sum
-
-# env file
-.env
-*.sh
-
-/bin
-.github/
-
-.idea/
-# .vscode/
-
-buf.lock
+Сейчас сервис умеет:
+- login
+- refresh access token через httpOnly cookie
+- logout
+- current user (`/auth/me`)
+- healthcheck
+- swagger UI/spec
+- seed initial admin

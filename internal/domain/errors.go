@@ -14,4 +14,7 @@ var (
 	ErrRefreshTokenNotFound = errors.New("refresh token not found")
 	ErrRefreshTokenRevoked  = errors.New("refresh token has been revoked")
 	ErrRefreshTokenExpired  = errors.New("refresh token has expired")
+
+	// Permission
+	ErrPermissionNotFound = errors.New("permission not found")
 )

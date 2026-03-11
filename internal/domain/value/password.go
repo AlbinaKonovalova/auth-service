@@ -2,14 +2,14 @@ package value
 
 import "errors"
 
-const passwordMinLen = 8
+const MinPasswordLength = 8
 
 type Password struct {
 	value string
 }
 
 func NewPassword(raw string) (Password, error) {
-	if len(raw) < passwordMinLen {
+	if len(raw) < MinPasswordLength {
 		return Password{}, errors.New("password must be at least 8 characters")
 	}
 	return Password{value: raw}, nil

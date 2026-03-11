@@ -8,3 +8,5 @@ type AccessClaims struct {
 	Roles       []string
 	Permissions []string
 }
+
+type ClaimsContextKey struct{}
