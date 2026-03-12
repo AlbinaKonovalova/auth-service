@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
+	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
@@ -25,16 +27,22 @@ var errCookieMalformed = errors.New("cookie malformed")
 type AuthServiceController struct {
 	pb.UnimplementedAuthServiceServer
 	auth   input.AuthUseCase
+	user   input.UserUseCase
 	cookie config.CookieConfig
+	logger *slog.Logger
 }
 
 func NewAuthServiceController(
 	auth input.AuthUseCase,
+	user input.UserUseCase,
 	cookie config.CookieConfig,
+	logger *slog.Logger,
 ) *AuthServiceController {
 	return &AuthServiceController{
 		auth:   auth,
+		user:   user,
 		cookie: cookie,
+		logger: logger,
 	}
 }
 
@@ -44,7 +52,7 @@ func (c *AuthServiceController) Login(ctx context.Context, req *pb.LoginRequest)
 		Password: req.Password,
 	})
 	if err != nil {
-		return nil, domainErrToStatus(err)
+		return nil, c.domainErrToStatus(err)
 	}
 
 	if err := c.setRefreshCookie(ctx, rawRefresh); err != nil {
@@ -67,7 +75,7 @@ func (c *AuthServiceController) Refresh(ctx context.Context, _ *pb.RefreshReques
 		RawRefreshToken: rawRefresh,
 	})
 	if err != nil {
-		return nil, domainErrToStatus(err)
+		return nil, c.domainErrToStatus(err)
 	}
 
 	if err := c.setRefreshCookie(ctx, newRawRefresh); err != nil {
@@ -84,7 +92,7 @@ func (c *AuthServiceController) Logout(ctx context.Context, _ *pb.LogoutRequest)
 		if logoutErr := c.auth.Logout(ctx, input.LogoutInput{
 			RawRefreshToken: rawRefresh,
 		}); logoutErr != nil {
-			return nil, domainErrToStatus(logoutErr)
+			return nil, c.domainErrToStatus(logoutErr)
 		}
 	case errors.Is(err, errCookieMissing):
 	default:
@@ -106,7 +114,7 @@ func (c *AuthServiceController) Me(ctx context.Context, _ *pb.MeRequest) (*pb.Me
 
 	user, err := c.auth.Me(ctx, claims)
 	if err != nil {
-		return nil, domainErrToStatus(err)
+		return nil, c.domainErrToStatus(err)
 	}
 
 	return &pb.MeResponse{
@@ -120,6 +128,39 @@ func (c *AuthServiceController) Me(ctx context.Context, _ *pb.MeRequest) (*pb.Me
 
 func (c *AuthServiceController) Healthz(_ context.Context, _ *pb.HealthzRequest) (*pb.HealthzResponse, error) {
 	return &pb.HealthzResponse{Status: "ok"}, nil
+}
+
+func (c *AuthServiceController) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	result, err := c.user.CreateUser(ctx, input.CreateUserInput{
+		Email:    req.Email,
+		Password: req.Password,
+		Roles:    req.Roles,
+	})
+	if err != nil {
+		return nil, c.domainErrToStatus(err)
+	}
+
+	return createUserResultToProto(result), nil
+}
+
+func (c *AuthServiceController) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
+	var isActive *bool
+	if req.IsActive != nil {
+		v := req.GetIsActive()
+		isActive = &v
+	}
+
+	result, err := c.user.ListUsers(ctx, dto.UserListFilters{
+		IsActive: isActive,
+		Role:     req.Role,
+		Page:     int(req.Page),
+		PerPage:  int(req.PerPage),
+	})
+	if err != nil {
+		return nil, c.domainErrToStatus(err)
+	}
+
+	return listUsersResultToProto(result), nil
 }
 
 func (c *AuthServiceController) setRefreshCookie(ctx context.Context, raw string) error {
