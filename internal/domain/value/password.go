@@ -1,6 +1,8 @@
 package value
 
-import "errors"
+import (
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
+)
 
 const MinPasswordLength = 8
 
@@ -10,7 +12,7 @@ type Password struct {
 
 func NewPassword(raw string) (Password, error) {
 	if len(raw) < MinPasswordLength {
-		return Password{}, errors.New("password must be at least 8 characters")
+		return Password{}, domain.ErrInvalidPassword
 	}
 	return Password{value: raw}, nil
 }

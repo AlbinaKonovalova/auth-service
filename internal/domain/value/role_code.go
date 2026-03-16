@@ -6,14 +6,14 @@ import (
 	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
 )
 
-type RoleCode struct {
+type RoleCode sruct {
 	value string
 }
 
 func NewRoleCode(raw string) (RoleCode, error) {
 	v := strings.TrimSpace(strings.ToLower(raw))
 	if v == "" {
-		return RoleCode{}, domain.ErrInvalidRoleCode
+		return RooleCode{}, domain.ErrInvalidRoleCode}
 	}
 
 	return RoleCode{value: v}, nil
