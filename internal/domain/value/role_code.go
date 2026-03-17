@@ -6,7 +6,7 @@ import (
 	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
 )
 
-type RoleCode sruct {
+type RoleCode struct {
 	value string
 }
 

@@ -7,27 +7,10 @@ import (
 	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
-	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
 )
 
-type MeUseCase struct {
-	users    output.UserRepository
-	resolver *common.PermissionResolver
-}
-
-func NewMeUseCase(
-	users output.UserRepository,
-	resolver *common.PermissionResolver,
-) *MeUseCase {
-	return &MeUseCase{
-		users:    users,
-		resolver: resolver,
-	}
-}
-
-func (uc *MeUseCase) Me(ctx context.Context, claims value.AccessClaims) (dto.CurrentUser, error) {
-	user, err := uc.users.FindByID(ctx, claims.UserID)
+func (s *AuthService) Me(ctx context.Context, claims value.AccessClaims) (dto.CurrentUser, error) {
+	user, err := s.users.FindByID(ctx, claims.UserID)
 	if err != nil {
 		return dto.CurrentUser{}, fmt.Errorf("find user: %w", err)
 	}
@@ -36,7 +19,7 @@ func (uc *MeUseCase) Me(ctx context.Context, claims value.AccessClaims) (dto.Cur
 		return dto.CurrentUser{}, domain.ErrUserInactive
 	}
 
-	roles, perms, err := uc.resolver.Resolve(ctx, user.ID)
+	roles, perms, err := s.resolver.Resolve(ctx, user.ID)
 	if err != nil {
 		return dto.CurrentUser{}, fmt.Errorf("resolve permissions: %w", err)
 	}

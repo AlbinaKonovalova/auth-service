@@ -10,51 +10,16 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
-	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
 )
 
-type RefreshUseCase struct {
-	users    output.UserRepository
-	sessions output.RefreshSessionRepository
-	tokens   output.TokenProvider
-	hasher   output.TokenHasher
-	tx       output.TxManager
-	clock    output.Clock
-	uuid     output.UUIDGenerator
-	resolver *common.PermissionResolver
-}
-
-func NewRefreshUseCase(
-	users output.UserRepository,
-	sessions output.RefreshSessionRepository,
-	tokens output.TokenProvider,
-	hasher output.TokenHasher,
-	tx output.TxManager,
-	clock output.Clock,
-	uuid output.UUIDGenerator,
-	resolver *common.PermissionResolver,
-) *RefreshUseCase {
-	return &RefreshUseCase{
-		users:    users,
-		sessions: sessions,
-		tokens:   tokens,
-		hasher:   hasher,
-		tx:       tx,
-		clock:    clock,
-		uuid:     uuid,
-		resolver: resolver,
-	}
-}
-
-func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (dto.RefreshResult, string, error) {
-	hash := uc.hasher.Hash(in.RawRefreshToken)
+func (s *AuthService) Refresh(ctx context.Context, in input.RefreshInput) (dto.RefreshResult, string, error) {
+	hash := s.tokenH.Hash(in.RawRefreshToken)
 
 	var result dto.RefreshResult
 	var rawRefresh string
 
-	err := uc.tx.RunInTx(ctx, func(ctx context.Context) error {
-		session, err := uc.sessions.FindByTokenHashForUpdate(ctx, hash)
+	err := s.tx.RunInTx(ctx, func(ctx context.Context) error {
+		session, err := s.sessions.FindByTokenHashForUpdate(ctx, hash)
 		if err != nil {
 			if errors.Is(err, domain.ErrRefreshTokenNotFound) {
 				return domain.ErrRefreshTokenNotFound
@@ -62,7 +27,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 			return fmt.Errorf("find refresh session: %w", err)
 		}
 
-		now := uc.clock.Now()
+		now := s.clock.Now()
 
 		if session.IsRevoked() {
 			return domain.ErrRefreshTokenRevoked
@@ -71,7 +36,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 			return domain.ErrRefreshTokenExpired
 		}
 
-		user, err := uc.users.FindByID(ctx, session.UserID)
+		user, err := s.users.FindByID(ctx, session.UserID)
 		if err != nil {
 			return fmt.Errorf("find user: %w", err)
 		}
@@ -79,7 +44,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 			return domain.ErrUserInactive
 		}
 
-		roles, perms, err := uc.resolver.Resolve(ctx, user.ID)
+		roles, perms, err := s.resolver.Resolve(ctx, user.ID)
 		if err != nil {
 			return fmt.Errorf("resolve permissions: %w", err)
 		}
@@ -91,29 +56,29 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, in input.RefreshInput) (d
 			Permissions: perms,
 		}
 
-		accessToken, _, err := uc.tokens.GenerateAccessToken(ctx, claims)
+		accessToken, _, err := s.tokens.GenerateAccessToken(ctx, claims)
 		if err != nil {
 			return fmt.Errorf("generate access token: %w", err)
 		}
 
-		if err := uc.sessions.Revoke(ctx, session.ID); err != nil {
+		if err := s.sessions.Revoke(ctx, session.ID); err != nil {
 			return fmt.Errorf("revoke old session: %w", err)
 		}
 
-		raw, newHash, err := uc.tokens.GenerateRefreshToken(ctx)
+		raw, newHash, err := s.tokens.GenerateRefreshToken(ctx)
 		if err != nil {
 			return fmt.Errorf("generate refresh token: %w", err)
 		}
 
 		newSession := entity.RefreshSession{
-			ID:        uc.uuid.New(),
+			ID:        s.uuid.New(),
 			UserID:    user.ID,
 			TokenHash: newHash,
 			ExpiresAt: now.Add(refreshTTL),
 			CreatedAt: now,
 		}
 
-		if err := uc.sessions.Save(ctx, newSession); err != nil {
+		if err := s.sessions.Save(ctx, newSession); err != nil {
 			return fmt.Errorf("save new session: %w", err)
 		}
 

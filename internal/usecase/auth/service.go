@@ -1,48 +1,49 @@
 package auth
 
 import (
-	"context"
+	"time"
 
-	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
-	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
+	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
+	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
 )
 
+const refreshTTL = 7 * 24 * time.Hour
+
 type AuthService struct {
-	login   *LoginUseCase
-	refresh *RefreshUseCase
-	logout  *LogoutUseCase
-	me      *MeUseCase
+	users    output.UserRepository
+	sessions output.RefreshSessionRepository
+	hasher   output.PasswordHasher
+	tokens   output.TokenProvider
+	tokenH   output.TokenHasher
+	tx       output.TxManager
+	clock    output.Clock
+	uuid     output.UUIDGenerator
+	resolver *common.PermissionResolver
 }
 
 func NewAuthService(
-	login *LoginUseCase,
-	refresh *RefreshUseCase,
-	logout *LogoutUseCase,
-	me *MeUseCase,
+	users output.UserRepository,
+	sessions output.RefreshSessionRepository,
+	hasher output.PasswordHasher,
+	tokens output.TokenProvider,
+	tokenH output.TokenHasher,
+	tx output.TxManager,
+	clock output.Clock,
+	uuid output.UUIDGenerator,
+	resolver *common.PermissionResolver,
 ) *AuthService {
 	return &AuthService{
-		login:   login,
-		refresh: refresh,
-		logout:  logout,
-		me:      me,
+		users:    users,
+		sessions: sessions,
+		hasher:   hasher,
+		tokens:   tokens,
+		tokenH:   tokenH,
+		tx:       tx,
+		clock:    clock,
+		uuid:     uuid,
+		resolver: resolver,
 	}
-}
-
-func (s *AuthService) Login(ctx context.Context, in input.LoginInput) (dto.LoginResult, string, error) {
-	return s.login.Login(ctx, in)
-}
-
-func (s *AuthService) Refresh(ctx context.Context, in input.RefreshInput) (dto.RefreshResult, string, error) {
-	return s.refresh.Refresh(ctx, in)
-}
-
-func (s *AuthService) Logout(ctx context.Context, in input.LogoutInput) error {
-	return s.logout.Logout(ctx, in)
-}
-
-func (s *AuthService) Me(ctx context.Context, claims value.AccessClaims) (dto.CurrentUser, error) {
-	return s.me.Me(ctx, claims)
 }
 
 // compile-time check

@@ -10,4 +10,6 @@ import (
 
 type UserRoleRepository interface {
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]entity.UserRole, error)
+	FindByUserIDs(ctx context.Context, userIDs []uuid.UUID) ([]entity.UserRole, error)
+	Assign(ctx context.Context, userRole entity.UserRole) error
 }
