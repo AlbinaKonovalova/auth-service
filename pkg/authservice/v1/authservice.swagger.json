@@ -17,7 +17,212 @@
     "application/json"
   ],
   "paths": {
-    "/auth/login": {
+    "/api/v1/admin/users": {
+      "get": {
+        "summary": "List users",
+        "description": "Get paginated list of users with optional filters by is_active and role",
+        "operationId": "AuthService_ListUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create user",
+        "description": "Create a new user with optional initial roles",
+        "operationId": "AuthService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "description": "Get a single user by their UUID",
+        "operationId": "AuthService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AdminUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/activate": {
+      "post": {
+        "summary": "Activate user",
+        "description": "Activate a user account by their UUID",
+        "operationId": "AuthService_ActivateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ActivateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/deactivate": {
+      "post": {
+        "summary": "Deactivate user",
+        "description": "Deactivate a user account and revoke all their refresh sessions",
+        "operationId": "AuthService_DeactivateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeactivateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
       "post": {
         "summary": "Login",
         "description": "Authenticate user by email and password",
@@ -51,10 +256,10 @@
         ]
       }
     },
-    "/auth/logout": {
+    "/api/v1/auth/logout": {
       "post": {
         "summary": "Logout",
-        "description": "Revoke refresh session",
+        "description": "Ends the current refresh session if present and clears its cookie. Succeeds even if no session exists",
         "operationId": "AuthService_Logout",
         "responses": {
           "200": {
@@ -85,7 +290,7 @@
         ]
       }
     },
-    "/auth/me": {
+    "/api/v1/auth/me": {
       "get": {
         "summary": "Current user",
         "description": "Get current authenticated user info",
@@ -114,7 +319,7 @@
         ]
       }
     },
-    "/auth/refresh": {
+    "/api/v1/auth/refresh": {
       "post": {
         "summary": "Refresh session",
         "description": "Rotate refresh token and issue new access token",
@@ -201,11 +406,108 @@
         }
       }
     },
+    "v1ActivateUserResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1AdminUserInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1CreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1DeactivateUserResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1HealthzResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
+        }
+      }
+    },
+    "v1ListUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AdminUserInfo"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "per_page": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -223,7 +525,7 @@
     "v1LoginResponse": {
       "type": "object",
       "properties": {
-        "accessToken": {
+        "access_token": {
           "type": "string"
         },
         "user": {
@@ -251,7 +553,7 @@
         "email": {
           "type": "string"
         },
-        "isActive": {
+        "is_active": {
           "type": "boolean"
         },
         "roles": {
@@ -274,7 +576,7 @@
     "v1RefreshResponse": {
       "type": "object",
       "properties": {
-        "accessToken": {
+        "access_token": {
           "type": "string"
         },
         "user": {

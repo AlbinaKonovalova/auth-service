@@ -2,10 +2,8 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
@@ -21,27 +19,22 @@ func (s *AuthService) Refresh(ctx context.Context, in input.RefreshInput) (dto.R
 	err := s.tx.RunInTx(ctx, func(ctx context.Context) error {
 		session, err := s.sessions.FindByTokenHashForUpdate(ctx, hash)
 		if err != nil {
-			if errors.Is(err, domain.ErrRefreshTokenNotFound) {
-				return domain.ErrRefreshTokenNotFound
-			}
 			return fmt.Errorf("find refresh session: %w", err)
 		}
 
 		now := s.clock.Now()
 
-		if session.IsRevoked() {
-			return domain.ErrRefreshTokenRevoked
-		}
-		if session.IsExpired(now) {
-			return domain.ErrRefreshTokenExpired
+		if err := session.EnsureUsable(now); err != nil {
+			return err
 		}
 
 		user, err := s.users.FindByID(ctx, session.UserID)
 		if err != nil {
 			return fmt.Errorf("find user: %w", err)
 		}
-		if !user.IsActive {
-			return domain.ErrUserInactive
+
+		if err := user.EnsureActive(); err != nil {
+			return err
 		}
 
 		roles, perms, err := s.resolver.Resolve(ctx, user.ID)
@@ -49,11 +42,9 @@ func (s *AuthService) Refresh(ctx context.Context, in input.RefreshInput) (dto.R
 			return fmt.Errorf("resolve permissions: %w", err)
 		}
 
-		claims := value.AccessClaims{
-			UserID:      user.ID,
-			Email:       user.Email,
-			Roles:       roles,
-			Permissions: perms,
+		claims, err := value.NewAccessClaims(user.ID, user.Email, roles, perms)
+		if err != nil {
+			return err
 		}
 
 		accessToken, _, err := s.tokens.GenerateAccessToken(ctx, claims)
@@ -70,12 +61,15 @@ func (s *AuthService) Refresh(ctx context.Context, in input.RefreshInput) (dto.R
 			return fmt.Errorf("generate refresh token: %w", err)
 		}
 
-		newSession := entity.RefreshSession{
-			ID:        s.uuid.New(),
-			UserID:    user.ID,
-			TokenHash: newHash,
-			ExpiresAt: now.Add(refreshTTL),
-			CreatedAt: now,
+		newSession, err := entity.NewRefreshSession(
+			s.uuid.New(),
+			user.ID,
+			newHash,
+			now,
+			s.refreshTTL,
+		)
+		if err != nil {
+			return err
 		}
 
 		if err := s.sessions.Save(ctx, newSession); err != nil {

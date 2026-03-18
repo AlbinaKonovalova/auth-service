@@ -13,7 +13,7 @@ type RoleCode struct {
 func NewRoleCode(raw string) (RoleCode, error) {
 	v := strings.TrimSpace(strings.ToLower(raw))
 	if v == "" {
-		return RooleCode{}, domain.ErrInvalidRoleCode}
+		return RoleCode{}, domain.ErrInvalidRoleCode
 	}
 
 	return RoleCode{value: v}, nil

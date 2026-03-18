@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
@@ -20,14 +21,15 @@ func (s *AuthService) Login(ctx context.Context, in input.LoginInput) (dto.Login
 
 	user, err := s.users.FindByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return dto.LoginResult{}, "", domain.ErrInvalidCredentials
+		err = domainservice.MapLoginLookupError(err)
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			return dto.LoginResult{}, "", err
 		}
 		return dto.LoginResult{}, "", fmt.Errorf("find user: %w", err)
 	}
 
-	if !user.IsActive {
-		return dto.LoginResult{}, "", domain.ErrUserInactive
+	if err := user.EnsureActive(); err != nil {
+		return dto.LoginResult{}, "", err
 	}
 
 	ok, err := s.hasher.Verify(in.Password, user.PasswordHash)
@@ -43,11 +45,9 @@ func (s *AuthService) Login(ctx context.Context, in input.LoginInput) (dto.Login
 		return dto.LoginResult{}, "", fmt.Errorf("resolve permissions: %w", err)
 	}
 
-	claims := value.AccessClaims{
-		UserID:      user.ID,
-		Email:       user.Email,
-		Roles:       roles,
-		Permissions: perms,
+	claims, err := value.NewAccessClaims(user.ID, user.Email, roles, perms)
+	if err != nil {
+		return dto.LoginResult{}, "", err
 	}
 
 	accessToken, _, err := s.tokens.GenerateAccessToken(ctx, claims)
@@ -69,12 +69,15 @@ func (s *AuthService) Login(ctx context.Context, in input.LoginInput) (dto.Login
 		}
 
 		now := s.clock.Now()
-		session := entity.RefreshSession{
-			ID:        s.uuid.New(),
-			UserID:    user.ID,
-			TokenHash: hash,
-			ExpiresAt: now.Add(refreshTTL),
-			CreatedAt: now,
+		session, err := entity.NewRefreshSession(
+			s.uuid.New(),
+			user.ID,
+			hash,
+			now,
+			s.refreshTTL,
+		)
+		if err != nil {
+			return err
 		}
 
 		if err := s.sessions.Save(ctx, session); err != nil {

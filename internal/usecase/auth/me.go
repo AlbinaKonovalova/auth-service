@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 )
@@ -15,8 +14,8 @@ func (s *AuthService) Me(ctx context.Context, claims value.AccessClaims) (dto.Cu
 		return dto.CurrentUser{}, fmt.Errorf("find user: %w", err)
 	}
 
-	if !user.IsActive {
-		return dto.CurrentUser{}, domain.ErrUserInactive
+	if err := user.EnsureActive(); err != nil {
+		return dto.CurrentUser{}, err
 	}
 
 	roles, perms, err := s.resolver.Resolve(ctx, user.ID)

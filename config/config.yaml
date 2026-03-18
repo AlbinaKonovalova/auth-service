@@ -21,7 +21,7 @@ auth:
 
 cookie:
   name: refresh_token
-  path: /auth
+  path: api/v1/auth
   domain: ""
   secure: false
   same_site: lax

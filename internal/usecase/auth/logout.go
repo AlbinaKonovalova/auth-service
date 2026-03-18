@@ -2,10 +2,9 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
@@ -13,15 +12,12 @@ func (s *AuthService) Logout(ctx context.Context, in input.LogoutInput) error {
 	hash := s.tokenH.Hash(in.RawRefreshToken)
 
 	session, err := s.sessions.FindByTokenHash(ctx, hash)
+
+	canRevoke, err := domainservice.CanLogout(err, session)
 	if err != nil {
-		if errors.Is(err, domain.ErrRefreshTokenNotFound) {
-			// Идемпотентность: сессия уже не существует — logout считается успешным.
-			return nil
-		}
 		return fmt.Errorf("find refresh session: %w", err)
 	}
-
-	if session.IsRevoked() {
+	if !canRevoke {
 		return nil
 	}
 

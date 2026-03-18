@@ -1,8 +1,7 @@
-package httpmiddleware
+package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -37,14 +36,4 @@ func bearerFromRequest(r *http.Request) string {
 		return v[len("Bearer "):]
 	}
 	return ""
-}
-
-func writeJSON(w http.ResponseWriter, code int, body any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(body)
-}
-
-func apiError(code int, message string) map[string]any {
-	return map[string]any{"code": code, "message": message}
 }

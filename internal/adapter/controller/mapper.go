@@ -54,3 +54,12 @@ func listUsersResultToProto(r input.ListUsersResult) *pb.ListUsersResponse {
 		PerPage: int32(r.PerPage),
 	}
 }
+
+func getUserResultToProto(r input.GetUserResult) *pb.AdminUserInfo {
+	return &pb.AdminUserInfo{
+		Id:       r.ID.String(),
+		Email:    r.Email,
+		IsActive: r.IsActive,
+		Roles:    r.Roles,
+	}
+}

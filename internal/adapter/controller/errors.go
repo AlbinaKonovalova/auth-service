@@ -23,12 +23,22 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 		return status.Error(codes.AlreadyExists, err.Error())
 
 	case errors.Is(err, domain.ErrRoleNotFound),
-		errors.Is(err, domain.ErrInvalidRoleCode),
+		errors.Is(err, domain.ErrUserRoleNotFound),
+		errors.Is(err, domain.ErrPermissionNotFound):
+		return status.Error(codes.NotFound, err.Error())
+
+	case errors.Is(err, domain.ErrInvalidRoleCode),
 		errors.Is(err, domain.ErrDuplicateRoleCode),
 		errors.Is(err, domain.ErrInvalidUserID),
+		errors.Is(err, domain.ErrInvalidEmail),
 		errors.Is(err, domain.ErrInvalidPasswordHash),
 		errors.Is(err, domain.ErrInvalidPassword),
-		errors.Is(err, domain.ErrInvalidUserRole):
+		errors.Is(err, domain.ErrInvalidUserRole),
+		errors.Is(err, domain.ErrInvalidRolePermission),
+		errors.Is(err, domain.ErrInvalidUserList),
+		errors.Is(err, domain.ErrInvalidPermissionCode),
+		errors.Is(err, domain.ErrUserMustHaveRole),
+		errors.Is(err, domain.ErrCannotRevokeLastRole):
 		return status.Error(codes.InvalidArgument, err.Error())
 
 	case errors.Is(err, domain.ErrRefreshTokenNotFound),

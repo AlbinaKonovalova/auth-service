@@ -5,6 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
 )
 
@@ -29,52 +31,70 @@ func NewPermissionResolver(
 	}
 }
 
-func (r *PermissionResolver) Resolve(ctx context.Context, userID uuid.UUID) (roles []string, perms []string, err error) {
-	userRoles, err := r.userRoles.FindByUserID(ctx, userID)
+func (r *PermissionResolver) Resolve(ctx context.Context, userID uuid.UUID) ([]string, []string, error) {
+	userRoleRows, err := r.userRoles.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, nil, err
 	}
-	if len(userRoles) == 0 {
-		return nil, nil, nil
+	if len(userRoleRows) == 0 {
+		return []string{}, []string{}, nil
 	}
 
-	roleIDs := make([]uuid.UUID, len(userRoles))
-	for i, ur := range userRoles {
-		roleIDs[i] = ur.RoleID
-	}
+	roleIDs := uniqueRoleIDs(userRoleRows)
 
 	roleEntities, err := r.roles.FindByIDs(ctx, roleIDs)
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, role := range roleEntities {
-		roles = append(roles, role.Code)
-	}
 
-	rolePerms, err := r.rolePermissions.FindByRoleIDs(ctx, roleIDs)
+	rolePermissionRows, err := r.rolePermissions.FindByRoleIDs(ctx, roleIDs)
 	if err != nil {
 		return nil, nil, err
 	}
-	if len(rolePerms) == 0 {
-		return roles, nil, nil
-	}
 
-	seen := make(map[uuid.UUID]struct{}, len(rolePerms))
-	permIDs := make([]uuid.UUID, 0, len(rolePerms))
-	for _, rp := range rolePerms {
-		if _, ok := seen[rp.PermissionID]; !ok {
-			seen[rp.PermissionID] = struct{}{}
-			permIDs = append(permIDs, rp.PermissionID)
+	permissionEntities := []entity.Permission{}
+	permissionIDs := uniquePermissionIDs(rolePermissionRows)
+	if len(permissionIDs) > 0 {
+		permissionEntities, err = r.permissions.FindByIDs(ctx, permissionIDs)
+		if err != nil {
+			return nil, nil, err
 		}
 	}
 
-	permEntities, err := r.permissions.FindByIDs(ctx, permIDs)
-	if err != nil {
-		return nil, nil, err
-	}
-	for _, p := range permEntities {
-		perms = append(perms, p.Code)
+	return domainservice.ResolveEffectiveAccess(
+		userRoleRows,
+		roleEntities,
+		rolePermissionRows,
+		permissionEntities,
+	)
+}
+
+func uniqueRoleIDs(userRoles []entity.UserRole) []uuid.UUID {
+	result := make([]uuid.UUID, 0, len(userRoles))
+	seen := make(map[uuid.UUID]struct{}, len(userRoles))
+
+	for _, userRole := range userRoles {
+		if _, ok := seen[userRole.RoleID]; ok {
+			continue
+		}
+		seen[userRole.RoleID] = struct{}{}
+		result = append(result, userRole.RoleID)
 	}
 
-	return roles, perms, nil
+	return result
+}
+
+func uniquePermissionIDs(rolePermissions []entity.RolePermission) []uuid.UUID {
+	result := make([]uuid.UUID, 0, len(rolePermissions))
+	seen := make(map[uuid.UUID]struct{}, len(rolePermissions))
+
+	for _, rolePermission := range rolePermissions {
+		if _, ok := seen[rolePermission.PermissionID]; ok {
+			continue
+		}
+		seen[rolePermission.PermissionID] = struct{}{}
+		result = append(result, rolePermission.PermissionID)
+	}
+
+	return result
 }

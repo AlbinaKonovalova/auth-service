@@ -15,4 +15,5 @@ type RefreshSessionRepository interface {
 	FindByTokenHashForUpdate(ctx context.Context, hash value.TokenHash) (*entity.RefreshSession, error)
 	Revoke(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredAndRevoked(ctx context.Context, userID uuid.UUID) error
+	RevokeAllByUserID(ctx context.Context, userID uuid.UUID) error
 }

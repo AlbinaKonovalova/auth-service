@@ -1,6 +1,35 @@
 package value
 
-import "github.com/google/uuid"
+import (
+	"context"
+	"strings"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
+	"github.com/google/uuid"
+)
+
+type ClaimsContextKey struct{}
+
+func NewAccessClaims(
+	userID uuid.UUID,
+	email string,
+	roles []string,
+	permissions []string,
+) (AccessClaims, error) {
+	if userID == uuid.Nil {
+		return AccessClaims{}, domain.ErrInvalidUserID
+	}
+	if strings.TrimSpace(email) == "" {
+		return AccessClaims{}, domain.ErrInvalidCredentials
+	}
+
+	return AccessClaims{
+		UserID:      userID,
+		Email:       email,
+		Roles:       roles,
+		Permissions: permissions,
+	}, nil
+}
 
 type AccessClaims struct {
 	UserID      uuid.UUID
@@ -9,4 +38,7 @@ type AccessClaims struct {
 	Permissions []string
 }
 
-type ClaimsContextKey struct{}
+func ClaimsFromContext(ctx context.Context) (AccessClaims, bool) {
+	claims, ok := ctx.Value(ClaimsContextKey{}).(AccessClaims)
+	return claims, ok
+}

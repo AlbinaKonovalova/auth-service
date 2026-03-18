@@ -38,3 +38,11 @@ func NewUser(id uuid.UUID, email value.Email, passwordHash string, now time.Time
 		UpdatedAt:    now,
 	}, nil
 }
+
+func (u User) EnsureActive() error {
+	if !u.IsActive {
+		return domain.ErrUserInactive
+	}
+
+	return nil
+}

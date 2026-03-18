@@ -3,6 +3,7 @@ package authservice
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	authadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/adapter/controller"
 	pgadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/repository/postgres"
+	"github.com/AlbinaKonovalova/auth-service/internal/adapter/system"
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
 	httpinfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/http"
 	pginfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/postgres"
@@ -57,14 +59,14 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		RefreshTokenBytes: cfg.Auth.RefreshTokenBytes,
 	})
 	tokenHasher := authadapter.NewTokenHasher()
-	clockImpl := authadapter.NewClock()
-	uuidGen := authadapter.NewUUIDGenerator()
+	clockImpl := system.NewClock()
+	uuidGen := system.NewUUIDGenerator()
 
 	resolver := common.NewPermissionResolver(userRoleRepo, rolePermRepo, roleRepo, permRepo)
 
-	authService := auth.NewAuthService(userRepo, sessionRepo, hasher, tokenProvider, tokenHasher, txManager, clockImpl, uuidGen, resolver)
+	authService := auth.NewAuthService(userRepo, sessionRepo, hasher, tokenProvider, tokenHasher, txManager, clockImpl, uuidGen, resolver, cfg.Cookie.TTL)
 
-	userService := user.NewUserService(userRepo, roleRepo, userRoleRepo, hasher, txManager, clockImpl, uuidGen)
+	userService := user.NewUserService(userRepo, roleRepo, userRoleRepo, sessionRepo, hasher, txManager, clockImpl, uuidGen)
 
 	ctrl := controller.NewAuthServiceController(authService, userService, cfg.Cookie, logger)
 
@@ -89,7 +91,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 }
 
 func (a *App) Run() error {
-	if err := a.server.Start(); err != nil && err != http.ErrServerClosed {
+	if err := a.server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil

@@ -46,6 +46,29 @@ func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity.Us
 	return &u, nil
 }
 
+func (r *UserRepository) FindByIDForUpdate(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, email, password_hash, is_active, created_at, updated_at
+		FROM users
+		WHERE id = $1
+		FOR UPDATE`
+
+	var u entity.User
+	err := q.QueryRowContext(ctx, query, id).Scan(
+		&u.ID, &u.Email, &u.PasswordHash, &u.IsActive, &u.CreatedAt, &u.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("find user by id for update: %w", err)
+	}
+
+	return &u, nil
+}
+
 func (r *UserRepository) FindByEmail(ctx context.Context, email value.Email) (*entity.User, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -159,4 +182,46 @@ func (r *UserRepository) List(ctx context.Context, f dto.UserListFilters) ([]ent
 	}
 
 	return users, total, nil
+}
+
+func (r *UserRepository) Activate(ctx context.Context, id uuid.UUID) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `UPDATE users SET is_active = true WHERE id = $1`
+
+	res, err := q.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("activate user: %w", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("activate user rows affected: %w", err)
+	}
+	if n == 0 {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepository) Deactivate(ctx context.Context, id uuid.UUID) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `UPDATE users SET is_active = false WHERE id = $1`
+
+	res, err := q.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("deactivate user: %w", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("deactivate user rows affected: %w", err)
+	}
+	if n == 0 {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
 }

@@ -3,9 +3,10 @@ package entity
 import (
 	"time"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
-	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 	"github.com/google/uuid"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
+	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 )
 
 type NewUserAggregate struct {
@@ -28,18 +29,20 @@ func BuildNewUserAggregate(
 		return NewUserAggregate{}, err
 	}
 
-	password, err := value.NewPassword(rawPassword)
-	if err != nil {
+	if _, err := value.NewPassword(rawPassword); err != nil {
 		return NewUserAggregate{}, err
 	}
-	_ = password
 
-	requestedRoleCodes, err := normalizeRoleCodes(rawRoleCodes)
+	requestedRoleCodes, err := NormalizeRequestedRoleCodes(rawRoleCodes)
 	if err != nil {
 		return NewUserAggregate{}, err
 	}
 
-	if err := ensureAllRequestedRolesExist(requestedRoleCodes, foundRoles); err != nil {
+	if err := ensureUserHasAtLeastOneRole(requestedRoleCodes); err != nil {
+		return NewUserAggregate{}, err
+	}
+
+	if err := EnsureAllRequestedRolesExist(requestedRoleCodes, foundRoles); err != nil {
 		return NewUserAggregate{}, err
 	}
 
@@ -68,45 +71,9 @@ func BuildNewUserAggregate(
 	}, nil
 }
 
-func normalizeRoleCodes(raw []string) ([]value.RoleCode, error) {
-	if len(raw) == 0 {
-		return nil, nil
-	}
-
-	seen := make(map[string]struct{}, len(raw))
-	result := make([]value.RoleCode, 0, len(raw))
-
-	for _, item := range raw {
-		code, err := value.NewRoleCode(item)
-		if err != nil {
-			return nil, err
-		}
-
-		if _, exists := seen[code.String()]; exists {
-			return nil, domain.ErrDuplicateRoleCode
-		}
-
-		seen[code.String()] = struct{}{}
-		result = append(result, code)
-	}
-
-	return result, nil
-}
-
-func ensureAllRequestedRolesExist(requested []value.RoleCode, found []Role) error {
+func ensureUserHasAtLeastOneRole(requested []value.RoleCode) error {
 	if len(requested) == 0 {
-		return nil
-	}
-
-	foundSet := make(map[string]struct{}, len(found))
-	for _, role := range found {
-		foundSet[role.Code] = struct{}{}
-	}
-
-	for _, code := range requested {
-		if _, ok := foundSet[code.String()]; !ok {
-			return domain.ErrRoleNotFound
-		}
+		return domain.ErrUserMustHaveRole
 	}
 
 	return nil
