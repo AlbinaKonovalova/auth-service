@@ -3,6 +3,7 @@ package authservice
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,11 +11,13 @@ import (
 	authadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/adapter/controller"
 	pgadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/repository/postgres"
+	"github.com/AlbinaKonovalova/auth-service/internal/adapter/system"
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
 	httpinfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/http"
 	pginfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/postgres"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
+	"github.com/AlbinaKonovalova/auth-service/internal/usecase/user"
 	authservicepkg "github.com/AlbinaKonovalova/auth-service/pkg/authservice"
 )
 
@@ -56,19 +59,16 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		RefreshTokenBytes: cfg.Auth.RefreshTokenBytes,
 	})
 	tokenHasher := authadapter.NewTokenHasher()
-	clockImpl := authadapter.NewClock()
-	uuidGen := authadapter.NewUUIDGenerator()
+	clockImpl := system.NewClock()
+	uuidGen := system.NewUUIDGenerator()
 
 	resolver := common.NewPermissionResolver(userRoleRepo, rolePermRepo, roleRepo, permRepo)
 
-	loginUC := auth.NewLoginUseCase(userRepo, sessionRepo, hasher, tokenProvider, txManager, clockImpl, uuidGen, resolver)
-	refreshUC := auth.NewRefreshUseCase(userRepo, sessionRepo, tokenProvider, tokenHasher, txManager, clockImpl, uuidGen, resolver)
-	logoutUC := auth.NewLogoutUseCase(sessionRepo, tokenHasher)
-	meUC := auth.NewMeUseCase(userRepo, resolver)
+	authService := auth.NewAuthService(userRepo, sessionRepo, hasher, tokenProvider, tokenHasher, txManager, clockImpl, uuidGen, resolver, cfg.Cookie.TTL)
 
-	authService := auth.NewAuthService(loginUC, refreshUC, logoutUC, meUC)
+	userService := user.NewUserService(userRepo, roleRepo, userRoleRepo, sessionRepo, hasher, txManager, clockImpl, uuidGen)
 
-	ctrl := controller.NewAuthServiceController(authService, cfg.Cookie)
+	ctrl := controller.NewAuthServiceController(authService, userService, cfg.Cookie, logger)
 
 	ctx := context.Background()
 	gwMux, err := httpinfra.NewGatewayMux(ctx, ctrl)
@@ -91,7 +91,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 }
 
 func (a *App) Run() error {
-	if err := a.server.Start(); err != nil && err != http.ErrServerClosed {
+	if err := a.server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil

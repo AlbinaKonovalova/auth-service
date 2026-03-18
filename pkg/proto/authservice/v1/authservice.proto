@@ -28,10 +28,13 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   produces: "application/json"
 };
 
+// AuthService provides authentication and authorization operations.
 service AuthService {
+  // Login authenticates a user and returns an access token.
+  // Refresh token is set as httpOnly cookie.
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
-      post: "/auth/login"
+      post: "/api/v1/auth/login"
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -41,9 +44,11 @@ service AuthService {
     };
   }
 
+  // Refresh rotates the refresh token and returns a new access token.
+  // Reads refresh token from httpOnly cookie, sets new cookie on response.
   rpc Refresh(RefreshRequest) returns (RefreshResponse) {
     option (google.api.http) = {
-      post: "/auth/refresh"
+      post: "/api/v1/auth/refresh"
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -53,21 +58,24 @@ service AuthService {
     };
   }
 
+  // Logout revokes the refresh session.
+  // Reads refresh token from httpOnly cookie, clears cookie on response.
   rpc Logout(LogoutRequest) returns (LogoutResponse) {
     option (google.api.http) = {
-      post: "/auth/logout"
+      post: "/api/v1/auth/logout"
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Logout"
-      description: "Revoke refresh session"
+      description: "Ends the current refresh session if present and clears its cookie. Succeeds even if no session exists"
       tags: ["auth"]
     };
   }
 
+  // Me returns the current authenticated user.
   rpc Me(MeRequest) returns (MeResponse) {
     option (google.api.http) = {
-      get: "/auth/me"
+      get: "/api/v1/auth/me"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Current user"
@@ -82,6 +90,7 @@ service AuthService {
     };
   }
 
+  // Healthz returns service health status.
   rpc Healthz(HealthzRequest) returns (HealthzResponse) {
     option (google.api.http) = {
       get: "/healthz"
@@ -91,50 +100,216 @@ service AuthService {
       tags: ["system"]
     };
   }
+
+  // CreateUser creates a new user (admin API).
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/users"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create user"
+      description: "Create a new user with optional initial roles"
+      tags: ["admin"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // ListUsers returns a paginated list of users with optional filters (admin API).
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/users"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List users"
+      description: "Get paginated list of users with optional filters by is_active and role"
+      tags: ["admin"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // GetUser returns a single user by ID (admin API).
+  rpc GetUser(GetUserRequest) returns (AdminUserInfo) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/users/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get user by ID"
+      description: "Get a single user by their UUID"
+      tags: ["admin"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // ActivateUser activates a user account (admin API).
+  rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/users/{id}/activate"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Activate user"
+      description: "Activate a user account by their UUID"
+      tags: ["admin"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // DeactivateUser deactivates a user account and revokes all their refresh sessions (admin API).
+  rpc DeactivateUser(DeactivateUserRequest) returns (DeactivateUserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/users/{id}/deactivate"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Deactivate user"
+      description: "Deactivate a user account and revoke all their refresh sessions"
+      tags: ["admin"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
 }
 
+// Login
 
 message LoginRequest {
-  string email    = 1;
-  string password = 2;
+  string email = 1 [json_name = "email"];
+  string password = 2 [json_name = "password"];
 }
 
 message LoginResponse {
-  string   access_token = 1;
-  UserInfo user         = 2;
+  string access_token = 1 [json_name = "access_token"];
+  UserInfo user = 2 [json_name = "user"];
 }
+
+// Refresh
 
 message RefreshRequest {}
 
 message RefreshResponse {
-  string   access_token = 1;
-  UserInfo user         = 2;
+  string access_token = 1 [json_name = "access_token"];
+  UserInfo user = 2 [json_name = "user"];
 }
+
+// Logout
 
 message LogoutRequest {}
 
 message LogoutResponse {
-  bool success = 1;
+  bool success = 1 [json_name = "success"];
 }
+
+// Me
 
 message MeRequest {}
 
 message MeResponse {
-  string          id          = 1;
-  string          email       = 2;
-  bool            is_active   = 3;
-  repeated string roles       = 4;
-  repeated string permissions = 5;
+  string id = 1 [json_name = "id"];
+  string email = 2 [json_name = "email"];
+  bool is_active = 3 [json_name = "is_active"];
+  repeated string roles = 4 [json_name = "roles"];
+  repeated string permissions = 5 [json_name = "permissions"];
 }
+
+// Healthz
 
 message HealthzRequest {}
 
 message HealthzResponse {
-  string status = 1;
+  string status = 1 [json_name = "status"];
 }
 
+// Shared messages
+
 message UserInfo {
-  string          id          = 1;
-  repeated string roles       = 2;
-  repeated string permissions = 3;
+  string id = 1 [json_name = "id"];
+  repeated string roles = 2 [json_name = "roles"];
+  repeated string permissions = 3 [json_name = "permissions"];
+}
+
+// Admin — Users
+
+message CreateUserRequest {
+  string email = 1 [json_name = "email"];
+  string password = 2 [json_name = "password"];
+  repeated string roles = 3 [json_name = "roles"];
+}
+
+message CreateUserResponse {
+  string id = 1 [json_name = "id"];
+  string email = 2 [json_name = "email"];
+  bool is_active = 3 [json_name = "is_active"];
+  repeated string roles = 4 [json_name = "roles"];
+}
+
+// Admin — List Users
+
+message ListUsersRequest {
+  optional bool is_active = 1 [json_name = "is_active"];
+  string role = 2 [json_name = "role"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+}
+
+message ListUsersResponse {
+  repeated AdminUserInfo users = 1 [json_name = "users"];
+  int32 total = 2 [json_name = "total"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+}
+
+message AdminUserInfo {
+  string id = 1 [json_name = "id"];
+  string email = 2 [json_name = "email"];
+  bool is_active = 3 [json_name = "is_active"];
+  repeated string roles = 4 [json_name = "roles"];
+}
+
+// Admin — Get User by ID
+
+message GetUserRequest {
+  string id = 1 [json_name = "id"];
+}
+
+// Admin — Activate User
+
+message ActivateUserRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message ActivateUserResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — Deactivate User
+
+message DeactivateUserRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message DeactivateUserResponse {
+  bool success = 1 [json_name = "success"];
 }

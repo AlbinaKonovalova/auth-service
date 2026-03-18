@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
@@ -14,15 +13,6 @@ import (
 
 func NewGatewayMux(ctx context.Context, svc pb.AuthServiceServer) (*runtime.ServeMux, error) {
 	mux := runtime.NewServeMux(
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
-				EmitUnpopulated: false,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
 		runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
 			switch key {
 			case "Cookie", "cookie":

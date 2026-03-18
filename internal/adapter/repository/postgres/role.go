@@ -53,3 +53,33 @@ func (r *RoleRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) ([]enti
 
 	return roles, rows.Err()
 }
+
+func (r *RoleRepository) FindByCodes(ctx context.Context, codes []string) ([]entity.Role, error) {
+	if len(codes) == 0 {
+		return nil, nil
+	}
+
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, name, description
+		FROM roles
+		WHERE code = ANY($1)`
+
+	rows, err := q.QueryContext(ctx, query, pq.Array(codes))
+	if err != nil {
+		return nil, fmt.Errorf("find roles by codes: %w", err)
+	}
+	defer rows.Close()
+
+	var roles []entity.Role
+	for rows.Next() {
+		var role entity.Role
+		if err := rows.Scan(&role.ID, &role.Code, &role.Name, &role.Description); err != nil {
+			return nil, fmt.Errorf("scan role by code: %w", err)
+		}
+		roles = append(roles, role)
+	}
+
+	return roles, rows.Err()
+}

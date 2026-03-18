@@ -2,43 +2,26 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	domain "github.com/AlbinaKonovalova/auth-service/internal/domain"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
 )
 
-type LogoutUseCase struct {
-	sessions output.RefreshSessionRepository
-	hasher   output.TokenHasher
-}
+func (s *AuthService) Logout(ctx context.Context, in input.LogoutInput) error {
+	hash := s.tokenH.Hash(in.RawRefreshToken)
 
-func NewLogoutUseCase(
-	sessions output.RefreshSessionRepository,
-	hasher output.TokenHasher,
-) *LogoutUseCase {
-	return &LogoutUseCase{sessions: sessions, hasher: hasher}
-}
+	session, err := s.sessions.FindByTokenHash(ctx, hash)
 
-func (uc *LogoutUseCase) Logout(ctx context.Context, in input.LogoutInput) error {
-	hash := uc.hasher.Hash(in.RawRefreshToken)
-
-	session, err := uc.sessions.FindByTokenHash(ctx, hash)
+	canRevoke, err := domainservice.CanLogout(err, session)
 	if err != nil {
-		if errors.Is(err, domain.ErrRefreshTokenNotFound) {
-			// Идемпотентность: сессия уже не существует — logout считается успешным.
-			return nil
-		}
 		return fmt.Errorf("find refresh session: %w", err)
 	}
-
-	if session.IsRevoked() {
+	if !canRevoke {
 		return nil
 	}
 
-	if err := uc.sessions.Revoke(ctx, session.ID); err != nil {
+	if err := s.sessions.Revoke(ctx, session.ID); err != nil {
 		return fmt.Errorf("revoke session: %w", err)
 	}
 

@@ -8,21 +8,49 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func domainErrToStatus(err error) error {
+func (c *AuthServiceController) domainErrToStatus(err error) error {
 	switch {
 	case errors.Is(err, domain.ErrInvalidCredentials):
 		return status.Error(codes.Unauthenticated, err.Error())
+
 	case errors.Is(err, domain.ErrUserInactive):
 		return status.Error(codes.FailedPrecondition, err.Error())
+
 	case errors.Is(err, domain.ErrUserNotFound):
 		return status.Error(codes.NotFound, err.Error())
+
+	case errors.Is(err, domain.ErrEmailAlreadyTaken):
+		return status.Error(codes.AlreadyExists, err.Error())
+
+	case errors.Is(err, domain.ErrRoleNotFound),
+		errors.Is(err, domain.ErrUserRoleNotFound),
+		errors.Is(err, domain.ErrPermissionNotFound):
+		return status.Error(codes.NotFound, err.Error())
+
+	case errors.Is(err, domain.ErrInvalidRoleCode),
+		errors.Is(err, domain.ErrDuplicateRoleCode),
+		errors.Is(err, domain.ErrInvalidUserID),
+		errors.Is(err, domain.ErrInvalidEmail),
+		errors.Is(err, domain.ErrInvalidPasswordHash),
+		errors.Is(err, domain.ErrInvalidPassword),
+		errors.Is(err, domain.ErrInvalidUserRole),
+		errors.Is(err, domain.ErrInvalidRolePermission),
+		errors.Is(err, domain.ErrInvalidUserList),
+		errors.Is(err, domain.ErrInvalidPermissionCode),
+		errors.Is(err, domain.ErrUserMustHaveRole),
+		errors.Is(err, domain.ErrCannotRevokeLastRole):
+		return status.Error(codes.InvalidArgument, err.Error())
+
 	case errors.Is(err, domain.ErrRefreshTokenNotFound),
 		errors.Is(err, domain.ErrRefreshTokenRevoked),
 		errors.Is(err, domain.ErrRefreshTokenExpired):
 		return status.Error(codes.Unauthenticated, err.Error())
+
 	case errors.Is(err, domain.ErrPermissionNotFound):
 		return status.Error(codes.NotFound, err.Error())
+
 	default:
+		c.logger.Error("unexpected error", "error", err)
 		return status.Error(codes.Internal, "internal server error")
 	}
 }

@@ -22,7 +22,7 @@ func defaultCookieConfig() CookieConfig {
 	secure := true
 	return CookieConfig{
 		Name:     "refresh_token",
-		Path:     "/auth",
+		Path:     "api/v1/auth",
 		Domain:   "",
 		Secure:   &secure,
 		SameSite: "strict",

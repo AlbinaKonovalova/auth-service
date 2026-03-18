@@ -106,3 +106,19 @@ func (r *RefreshSessionRepository) DeleteExpiredAndRevoked(ctx context.Context, 
 
 	return nil
 }
+
+func (r *RefreshSessionRepository) RevokeAllByUserID(ctx context.Context, userID uuid.UUID) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		UPDATE refresh_sessions
+		SET revoked_at = now()
+		WHERE user_id = $1 AND revoked_at IS NULL AND expires_at > now()`
+
+	_, err := q.ExecContext(ctx, query, userID)
+	if err != nil {
+		return fmt.Errorf("revoke all sessions by user id: %w", err)
+	}
+
+	return nil
+}
