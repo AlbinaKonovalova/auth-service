@@ -253,6 +253,25 @@ service AuthService {
     };
   }
 
+  // CreateRole creates a new role (admin API).
+  rpc CreateRole(CreateRoleRequest) returns (RoleInfo) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/roles"
+      body: "role"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create role"
+      description: "Create a new role. Fails if role code already exists"
+      tags: ["roles"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
   // AssignRole assigns a role to a user (admin API).
   rpc AssignRole(AssignRoleRequest) returns (AssignRoleResponse) {
     option (google.api.http) = {
@@ -584,4 +603,16 @@ message RevokePermissionRequest {
 
 message RevokePermissionResponse {
   bool success = 1 [json_name = "success"];
+}
+
+// Admin — Create Role
+
+message CreateRoleBody {
+  string code = 1 [json_name = "code"];
+  string name = 2 [json_name = "name"];
+  string description = 3 [json_name = "description"];
+}
+
+message CreateRoleRequest {
+  CreateRoleBody role = 1 [json_name = "role"];
 }

@@ -2035,6 +2035,110 @@ func (x *RevokePermissionResponse) GetSuccess() bool {
 	return false
 }
 
+type CreateRoleBody struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoleBody) Reset() {
+	*x = CreateRoleBody{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoleBody) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoleBody) ProtoMessage() {}
+
+func (x *CreateRoleBody) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoleBody.ProtoReflect.Descriptor instead.
+func (*CreateRoleBody) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *CreateRoleBody) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *CreateRoleBody) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateRoleBody) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type CreateRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          *CreateRoleBody        `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoleRequest) Reset() {
+	*x = CreateRoleRequest{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoleRequest) ProtoMessage() {}
+
+func (x *CreateRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoleRequest.ProtoReflect.Descriptor instead.
+func (*CreateRoleRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *CreateRoleRequest) GetRole() *CreateRoleBody {
+	if x != nil {
+		return x.Role
+	}
+	return nil
+}
+
 var File_authservice_v1_authservice_proto protoreflect.FileDescriptor
 
 const file_authservice_v1_authservice_proto_rawDesc = "" +
@@ -2154,7 +2258,13 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	"\trole_code\x18\x01 \x01(\tR\trole_code\x12(\n" +
 	"\x0fpermission_code\x18\x02 \x01(\tR\x0fpermission_code\"4\n" +
 	"\x18RevokePermissionResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xd2 \n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"Z\n" +
+	"\x0eCreateRoleBody\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"G\n" +
+	"\x11CreateRoleRequest\x122\n" +
+	"\x04role\x18\x01 \x01(\v2\x1e.authservice.v1.CreateRoleBodyR\x04role2\x9c\"\n" +
 	"\vAuthService\x12\x9c\x01\n" +
 	"\x05Login\x12\x1c.authservice.v1.LoginRequest\x1a\x1d.authservice.v1.LoginResponse\"V\x92A6\n" +
 	"\x04auth\x12\x05Login\x1a'Authenticate user by email and password\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/api/v1/auth/login\x12\xb6\x01\n" +
@@ -2207,7 +2317,13 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	"List roles\x1a\x1aGet the full list of rolesb\f\n" +
 	"\n" +
 	"\n" +
-	"\x06Bearer\x12\x00\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/admin/roles\x12\xb3\x02\n" +
+	"\x06Bearer\x12\x00\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/admin/roles\x12\xc7\x01\n" +
+	"\n" +
+	"CreateRole\x12!.authservice.v1.CreateRoleRequest\x1a\x18.authservice.v1.RoleInfo\"|\x92AX\n" +
+	"\x05roles\x12\vCreate role\x1a4Create a new role. Fails if role code already existsb\f\n" +
+	"\n" +
+	"\n" +
+	"\x06Bearer\x12\x00\x82\xd3\xe4\x93\x02\x1b:\x04role\"\x13/api/v1/admin/roles\x12\xb3\x02\n" +
 	"\n" +
 	"AssignRole\x12!.authservice.v1.AssignRoleRequest\x1a\".authservice.v1.AssignRoleResponse\"\xdd\x01\x92A\xa7\x01\n" +
 	"\x15user role assignments\x12\x13Assign role to user\x1akAssign a role to a user by role code. Idempotent: assigning an already assigned role succeeds without errorb\f\n" +
@@ -2266,7 +2382,7 @@ func file_authservice_v1_authservice_proto_rawDescGZIP() []byte {
 	return file_authservice_v1_authservice_proto_rawDescData
 }
 
-var file_authservice_v1_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
+var file_authservice_v1_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
 var file_authservice_v1_authservice_proto_goTypes = []any{
 	(*LoginRequest)(nil),               // 0: authservice.v1.LoginRequest
 	(*LoginResponse)(nil),              // 1: authservice.v1.LoginResponse
@@ -2309,6 +2425,8 @@ var file_authservice_v1_authservice_proto_goTypes = []any{
 	(*AssignPermissionResponse)(nil),   // 38: authservice.v1.AssignPermissionResponse
 	(*RevokePermissionRequest)(nil),    // 39: authservice.v1.RevokePermissionRequest
 	(*RevokePermissionResponse)(nil),   // 40: authservice.v1.RevokePermissionResponse
+	(*CreateRoleBody)(nil),             // 41: authservice.v1.CreateRoleBody
+	(*CreateRoleRequest)(nil),          // 42: authservice.v1.CreateRoleRequest
 }
 var file_authservice_v1_authservice_proto_depIdxs = []int32{
 	10, // 0: authservice.v1.LoginResponse.user:type_name -> authservice.v1.UserInfo
@@ -2320,47 +2438,50 @@ var file_authservice_v1_authservice_proto_depIdxs = []int32{
 	31, // 6: authservice.v1.ListPermissionsResponse.permissions:type_name -> authservice.v1.PermissionInfo
 	31, // 7: authservice.v1.GetRolePermissionsResponse.permissions:type_name -> authservice.v1.PermissionInfo
 	36, // 8: authservice.v1.AssignPermissionRequest.assignment:type_name -> authservice.v1.AssignPermissionBody
-	0,  // 9: authservice.v1.AuthService.Login:input_type -> authservice.v1.LoginRequest
-	2,  // 10: authservice.v1.AuthService.Refresh:input_type -> authservice.v1.RefreshRequest
-	4,  // 11: authservice.v1.AuthService.Logout:input_type -> authservice.v1.LogoutRequest
-	6,  // 12: authservice.v1.AuthService.Me:input_type -> authservice.v1.MeRequest
-	8,  // 13: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
-	11, // 14: authservice.v1.AuthService.CreateUser:input_type -> authservice.v1.CreateUserRequest
-	13, // 15: authservice.v1.AuthService.ListUsers:input_type -> authservice.v1.ListUsersRequest
-	16, // 16: authservice.v1.AuthService.GetUser:input_type -> authservice.v1.GetUserRequest
-	17, // 17: authservice.v1.AuthService.ActivateUser:input_type -> authservice.v1.ActivateUserRequest
-	19, // 18: authservice.v1.AuthService.DeactivateUser:input_type -> authservice.v1.DeactivateUserRequest
-	22, // 19: authservice.v1.AuthService.GetUserRoles:input_type -> authservice.v1.GetUserRolesRequest
-	24, // 20: authservice.v1.AuthService.ListRoles:input_type -> authservice.v1.ListRolesRequest
-	27, // 21: authservice.v1.AuthService.AssignRole:input_type -> authservice.v1.AssignRoleRequest
-	29, // 22: authservice.v1.AuthService.RevokeRole:input_type -> authservice.v1.RevokeRoleRequest
-	32, // 23: authservice.v1.AuthService.ListPermissions:input_type -> authservice.v1.ListPermissionsRequest
-	34, // 24: authservice.v1.AuthService.GetRolePermissions:input_type -> authservice.v1.GetRolePermissionsRequest
-	37, // 25: authservice.v1.AuthService.AssignPermission:input_type -> authservice.v1.AssignPermissionRequest
-	39, // 26: authservice.v1.AuthService.RevokePermission:input_type -> authservice.v1.RevokePermissionRequest
-	1,  // 27: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
-	3,  // 28: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
-	5,  // 29: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
-	7,  // 30: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
-	9,  // 31: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
-	12, // 32: authservice.v1.AuthService.CreateUser:output_type -> authservice.v1.CreateUserResponse
-	14, // 33: authservice.v1.AuthService.ListUsers:output_type -> authservice.v1.ListUsersResponse
-	15, // 34: authservice.v1.AuthService.GetUser:output_type -> authservice.v1.AdminUserInfo
-	18, // 35: authservice.v1.AuthService.ActivateUser:output_type -> authservice.v1.ActivateUserResponse
-	20, // 36: authservice.v1.AuthService.DeactivateUser:output_type -> authservice.v1.DeactivateUserResponse
-	23, // 37: authservice.v1.AuthService.GetUserRoles:output_type -> authservice.v1.GetUserRolesResponse
-	25, // 38: authservice.v1.AuthService.ListRoles:output_type -> authservice.v1.ListRolesResponse
-	28, // 39: authservice.v1.AuthService.AssignRole:output_type -> authservice.v1.AssignRoleResponse
-	30, // 40: authservice.v1.AuthService.RevokeRole:output_type -> authservice.v1.RevokeRoleResponse
-	33, // 41: authservice.v1.AuthService.ListPermissions:output_type -> authservice.v1.ListPermissionsResponse
-	35, // 42: authservice.v1.AuthService.GetRolePermissions:output_type -> authservice.v1.GetRolePermissionsResponse
-	38, // 43: authservice.v1.AuthService.AssignPermission:output_type -> authservice.v1.AssignPermissionResponse
-	40, // 44: authservice.v1.AuthService.RevokePermission:output_type -> authservice.v1.RevokePermissionResponse
-	27, // [27:45] is the sub-list for method output_type
-	9,  // [9:27] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	41, // 9: authservice.v1.CreateRoleRequest.role:type_name -> authservice.v1.CreateRoleBody
+	0,  // 10: authservice.v1.AuthService.Login:input_type -> authservice.v1.LoginRequest
+	2,  // 11: authservice.v1.AuthService.Refresh:input_type -> authservice.v1.RefreshRequest
+	4,  // 12: authservice.v1.AuthService.Logout:input_type -> authservice.v1.LogoutRequest
+	6,  // 13: authservice.v1.AuthService.Me:input_type -> authservice.v1.MeRequest
+	8,  // 14: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
+	11, // 15: authservice.v1.AuthService.CreateUser:input_type -> authservice.v1.CreateUserRequest
+	13, // 16: authservice.v1.AuthService.ListUsers:input_type -> authservice.v1.ListUsersRequest
+	16, // 17: authservice.v1.AuthService.GetUser:input_type -> authservice.v1.GetUserRequest
+	17, // 18: authservice.v1.AuthService.ActivateUser:input_type -> authservice.v1.ActivateUserRequest
+	19, // 19: authservice.v1.AuthService.DeactivateUser:input_type -> authservice.v1.DeactivateUserRequest
+	22, // 20: authservice.v1.AuthService.GetUserRoles:input_type -> authservice.v1.GetUserRolesRequest
+	24, // 21: authservice.v1.AuthService.ListRoles:input_type -> authservice.v1.ListRolesRequest
+	42, // 22: authservice.v1.AuthService.CreateRole:input_type -> authservice.v1.CreateRoleRequest
+	27, // 23: authservice.v1.AuthService.AssignRole:input_type -> authservice.v1.AssignRoleRequest
+	29, // 24: authservice.v1.AuthService.RevokeRole:input_type -> authservice.v1.RevokeRoleRequest
+	32, // 25: authservice.v1.AuthService.ListPermissions:input_type -> authservice.v1.ListPermissionsRequest
+	34, // 26: authservice.v1.AuthService.GetRolePermissions:input_type -> authservice.v1.GetRolePermissionsRequest
+	37, // 27: authservice.v1.AuthService.AssignPermission:input_type -> authservice.v1.AssignPermissionRequest
+	39, // 28: authservice.v1.AuthService.RevokePermission:input_type -> authservice.v1.RevokePermissionRequest
+	1,  // 29: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
+	3,  // 30: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
+	5,  // 31: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
+	7,  // 32: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
+	9,  // 33: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
+	12, // 34: authservice.v1.AuthService.CreateUser:output_type -> authservice.v1.CreateUserResponse
+	14, // 35: authservice.v1.AuthService.ListUsers:output_type -> authservice.v1.ListUsersResponse
+	15, // 36: authservice.v1.AuthService.GetUser:output_type -> authservice.v1.AdminUserInfo
+	18, // 37: authservice.v1.AuthService.ActivateUser:output_type -> authservice.v1.ActivateUserResponse
+	20, // 38: authservice.v1.AuthService.DeactivateUser:output_type -> authservice.v1.DeactivateUserResponse
+	23, // 39: authservice.v1.AuthService.GetUserRoles:output_type -> authservice.v1.GetUserRolesResponse
+	25, // 40: authservice.v1.AuthService.ListRoles:output_type -> authservice.v1.ListRolesResponse
+	21, // 41: authservice.v1.AuthService.CreateRole:output_type -> authservice.v1.RoleInfo
+	28, // 42: authservice.v1.AuthService.AssignRole:output_type -> authservice.v1.AssignRoleResponse
+	30, // 43: authservice.v1.AuthService.RevokeRole:output_type -> authservice.v1.RevokeRoleResponse
+	33, // 44: authservice.v1.AuthService.ListPermissions:output_type -> authservice.v1.ListPermissionsResponse
+	35, // 45: authservice.v1.AuthService.GetRolePermissions:output_type -> authservice.v1.GetRolePermissionsResponse
+	38, // 46: authservice.v1.AuthService.AssignPermission:output_type -> authservice.v1.AssignPermissionResponse
+	40, // 47: authservice.v1.AuthService.RevokePermission:output_type -> authservice.v1.RevokePermissionResponse
+	29, // [29:48] is the sub-list for method output_type
+	10, // [10:29] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_authservice_v1_authservice_proto_init() }
@@ -2375,7 +2496,7 @@ func file_authservice_v1_authservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_authservice_v1_authservice_proto_rawDesc), len(file_authservice_v1_authservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   41,
+			NumMessages:   43,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
