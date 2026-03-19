@@ -26,3 +26,11 @@ func (c *AuthServiceController) CreateRole(ctx context.Context, req *pb.CreateRo
 
 	return roleViewToProto(result), nil
 }
+
+func (c *AuthServiceController) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*pb.DeleteRoleResponse, error) {
+	if err := c.role.DeleteRole(ctx, req.RoleCode); err != nil {
+		return nil, c.domainErrToStatus(err)
+	}
+
+	return &pb.DeleteRoleResponse{Success: true}, nil
+}

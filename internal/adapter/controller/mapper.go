@@ -92,23 +92,23 @@ func listRolesResultToProto(roles []domainservice.RoleView) *pb.ListRolesRespons
 func listPermissionsResultToProto(permissions []domainservice.PermissionView) *pb.ListPermissionsResponse {
 	pbPerms := make([]*pb.PermissionInfo, len(permissions))
 	for i, p := range permissions {
-		pbPerms[i] = &pb.PermissionInfo{
-			Id:          p.ID.String(),
-			Code:        p.Code,
-			Description: p.Description,
-		}
+		pbPerms[i] = permissionViewToProto(p)
 	}
 	return &pb.ListPermissionsResponse{Permissions: pbPerms}
+}
+
+func permissionViewToProto(p domainservice.PermissionView) *pb.PermissionInfo {
+	return &pb.PermissionInfo{
+		Id:          p.ID.String(),
+		Code:        p.Code,
+		Description: p.Description,
+	}
 }
 
 func getRolePermissionsResultToProto(permissions []domainservice.PermissionView) *pb.GetRolePermissionsResponse {
 	pbPerms := make([]*pb.PermissionInfo, len(permissions))
 	for i, p := range permissions {
-		pbPerms[i] = &pb.PermissionInfo{
-			Id:          p.ID.String(),
-			Code:        p.Code,
-			Description: p.Description,
-		}
+		pbPerms[i] = permissionViewToProto(p)
 	}
 	return &pb.GetRolePermissionsResponse{Permissions: pbPerms}
 }

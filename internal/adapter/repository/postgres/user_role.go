@@ -172,3 +172,18 @@ func (r *UserRoleRepository) Revoke(ctx context.Context, userID, roleID uuid.UUI
 
 	return nil
 }
+
+// ExistsByRoleID возвращает true если хотя бы один пользователь имеет эту роль.
+// Используется в delete role сценарии для проверки связей перед удалением.
+func (r *UserRoleRepository) ExistsByRoleID(ctx context.Context, roleID uuid.UUID) (bool, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `SELECT EXISTS(SELECT 1 FROM user_roles WHERE role_id = $1)`
+
+	var exists bool
+	if err := q.QueryRowContext(ctx, query, roleID).Scan(&exists); err != nil {
+		return false, fmt.Errorf("check user role exists by role id: %w", err)
+	}
+
+	return exists, nil
+}

@@ -65,6 +65,43 @@
             "Bearer": []
           }
         ]
+      },
+      "post": {
+        "summary": "Create permission",
+        "description": "Create a new permission. Fails if permission code already exists or description is empty",
+        "operationId": "AuthService_CreatePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PermissionInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreatePermissionBody"
+            }
+          }
+        ],
+        "tags": [
+          "permissions"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
     "/api/v1/admin/roles": {
@@ -121,6 +158,43 @@
             "schema": {
               "$ref": "#/definitions/v1CreateRoleBody"
             }
+          }
+        ],
+        "tags": [
+          "roles"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/roles/{role_code}": {
+      "delete": {
+        "summary": "Delete role",
+        "description": "Delete a role by code. Fails if the role is assigned to users or has permissions",
+        "operationId": "AuthService_DeleteRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -828,6 +902,21 @@
         }
       }
     },
+    "v1CreatePermissionBody": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "description"
+      ]
+    },
     "v1CreateRoleBody": {
       "type": "object",
       "properties": {
@@ -880,6 +969,14 @@
       }
     },
     "v1DeactivateUserResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteRoleResponse": {
       "type": "object",
       "properties": {
         "success": {

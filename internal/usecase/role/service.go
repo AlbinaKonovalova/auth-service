@@ -7,15 +7,25 @@ import (
 // RoleService реализует input.RoleUseCase.
 // Оркестрирует сценарии управления справочником ролей.
 type RoleService struct {
-	roleRepo output.RoleRepository
-	uuidGen  output.UUIDGenerator
-	tx       output.TxManager
+	roleRepo     output.RoleRepository
+	userRoleRepo output.UserRoleRepository
+	rolePermRepo output.RolePermissionRepository
+	uuidGen      output.UUIDGenerator
+	tx           output.TxManager
 }
 
-func NewRoleService(roleRepo output.RoleRepository, uuidGen output.UUIDGenerator, tx output.TxManager) *RoleService {
+func NewRoleService(
+	roleRepo output.RoleRepository,
+	userRoleRepo output.UserRoleRepository,
+	rolePermRepo output.RolePermissionRepository,
+	uuidGen output.UUIDGenerator,
+	tx output.TxManager,
+) *RoleService {
 	return &RoleService{
-		roleRepo: roleRepo,
-		uuidGen:  uuidGen,
-		tx:       tx,
+		roleRepo:     roleRepo,
+		userRoleRepo: userRoleRepo,
+		rolePermRepo: rolePermRepo,
+		uuidGen:      uuidGen,
+		tx:           tx,
 	}
 }

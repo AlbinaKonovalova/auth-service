@@ -28,3 +28,5 @@ cookies.txt
 # .vscode/
 
 buf.lock
+
+.DS_Store

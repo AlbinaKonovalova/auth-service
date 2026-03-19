@@ -13,6 +13,7 @@ type UserRoleRepository interface {
 	FindByUserIDForUpdate(ctx context.Context, userID uuid.UUID) ([]entity.UserRole, error)
 	FindByUserIDs(ctx context.Context, userIDs []uuid.UUID) ([]entity.UserRole, error)
 	Exists(ctx context.Context, userID, roleID uuid.UUID) (bool, error)
+	ExistsByRoleID(ctx context.Context, roleID uuid.UUID) (bool, error)
 	Assign(ctx context.Context, userRole entity.UserRole) error
 	Revoke(ctx context.Context, userID, roleID uuid.UUID) error
 }

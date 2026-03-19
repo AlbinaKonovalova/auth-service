@@ -22,6 +22,7 @@ var (
 	ErrInvalidRoleCode   = errors.New("invalid role code")
 	ErrDuplicateRoleCode = errors.New("duplicate role code")
 	ErrRoleNameEmpty     = errors.New("role name must not be empty")
+	ErrRoleInUse         = errors.New("role is assigned and cannot be deleted")
 
 	// UserRole
 	ErrInvalidUserRole = errors.New("invalid user role")
@@ -35,8 +36,10 @@ var (
 	ErrRefreshTokenExpired  = errors.New("refresh token has expired")
 
 	// Permission
-	ErrPermissionNotFound    = errors.New("permission not found")
-	ErrInvalidPermissionCode = errors.New("invalid permission code")
+	ErrPermissionNotFound         = errors.New("permission not found")
+	ErrInvalidPermissionCode      = errors.New("invalid permission code")
+	ErrDuplicatePermissionCode    = errors.New("duplicate permission code")
+	ErrPermissionDescriptionEmpty = errors.New("permission description must not be empty")
 
 	// Access — assign / revoke
 	ErrCannotRevokeLastRole   = errors.New("cannot revoke the last role from user")
