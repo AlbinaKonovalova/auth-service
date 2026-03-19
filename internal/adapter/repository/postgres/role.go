@@ -130,3 +130,34 @@ func (r *RoleRepository) FindAll(ctx context.Context) ([]entity.Role, error) {
 
 	return roles, rows.Err()
 }
+
+func (r *RoleRepository) ExistsByCode(ctx context.Context, code string) (bool, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `SELECT EXISTS(SELECT 1 FROM roles WHERE code = $1)`
+
+	var exists bool
+	if err := q.QueryRowContext(ctx, query, code).Scan(&exists); err != nil {
+		return false, fmt.Errorf("check role exists by code: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *RoleRepository) Create(ctx context.Context, role entity.Role) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		INSERT INTO roles (id, code, name, description)
+		VALUES ($1, $2, $3, $4)`
+
+	if _, err := q.ExecContext(ctx, query, role.ID, role.Code, role.Name, role.Description); err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return domain.ErrDuplicateRoleCode
+		}
+		return fmt.Errorf("create role: %w", err)
+	}
+
+	return nil
+}

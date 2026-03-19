@@ -8,8 +8,14 @@ import (
 // Оркестрирует сценарии управления справочником ролей.
 type RoleService struct {
 	roleRepo output.RoleRepository
+	uuidGen  output.UUIDGenerator
+	tx       output.TxManager
 }
 
-func NewRoleService(roleRepo output.RoleRepository) *RoleService {
-	return &RoleService{roleRepo: roleRepo}
+func NewRoleService(roleRepo output.RoleRepository, uuidGen output.UUIDGenerator, tx output.TxManager) *RoleService {
+	return &RoleService{
+		roleRepo: roleRepo,
+		uuidGen:  uuidGen,
+		tx:       tx,
+	}
 }

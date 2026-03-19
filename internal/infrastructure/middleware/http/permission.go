@@ -66,6 +66,10 @@ func requiredAdminPermission(method, path string) (string, bool) {
 	case method == http.MethodGet && path == "/api/v1/admin/roles":
 		return "users.read", true
 
+	// POST /api/v1/admin/roles
+	case method == http.MethodPost && path == "/api/v1/admin/roles":
+		return "users.write", true
+
 	// GET /api/v1/admin/roles/{role_code}/permissions
 	case method == http.MethodGet && isAdminRolePermissionsPath(path):
 		return "users.read", true

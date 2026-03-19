@@ -31,6 +31,7 @@ const (
 	AuthService_DeactivateUser_FullMethodName     = "/authservice.v1.AuthService/DeactivateUser"
 	AuthService_GetUserRoles_FullMethodName       = "/authservice.v1.AuthService/GetUserRoles"
 	AuthService_ListRoles_FullMethodName          = "/authservice.v1.AuthService/ListRoles"
+	AuthService_CreateRole_FullMethodName         = "/authservice.v1.AuthService/CreateRole"
 	AuthService_AssignRole_FullMethodName         = "/authservice.v1.AuthService/AssignRole"
 	AuthService_RevokeRole_FullMethodName         = "/authservice.v1.AuthService/RevokeRole"
 	AuthService_ListPermissions_FullMethodName    = "/authservice.v1.AuthService/ListPermissions"
@@ -72,6 +73,8 @@ type AuthServiceClient interface {
 	GetUserRoles(ctx context.Context, in *GetUserRolesRequest, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
 	// ListRoles returns the full list of roles (admin API).
 	ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
+	// CreateRole creates a new role (admin API).
+	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*RoleInfo, error)
 	// AssignRole assigns a role to a user (admin API).
 	AssignRole(ctx context.Context, in *AssignRoleRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error)
 	// RevokeRole revokes a role from a user (admin API).
@@ -214,6 +217,16 @@ func (c *authServiceClient) ListRoles(ctx context.Context, in *ListRolesRequest,
 	return out, nil
 }
 
+func (c *authServiceClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*RoleInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoleInfo)
+	err := c.cc.Invoke(ctx, AuthService_CreateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) AssignRole(ctx context.Context, in *AssignRoleRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AssignRoleResponse)
@@ -307,6 +320,8 @@ type AuthServiceServer interface {
 	GetUserRoles(context.Context, *GetUserRolesRequest) (*GetUserRolesResponse, error)
 	// ListRoles returns the full list of roles (admin API).
 	ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
+	// CreateRole creates a new role (admin API).
+	CreateRole(context.Context, *CreateRoleRequest) (*RoleInfo, error)
 	// AssignRole assigns a role to a user (admin API).
 	AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error)
 	// RevokeRole revokes a role from a user (admin API).
@@ -364,6 +379,9 @@ func (UnimplementedAuthServiceServer) GetUserRoles(context.Context, *GetUserRole
 }
 func (UnimplementedAuthServiceServer) ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListRoles not implemented")
+}
+func (UnimplementedAuthServiceServer) CreateRole(context.Context, *CreateRoleRequest) (*RoleInfo, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateRole not implemented")
 }
 func (UnimplementedAuthServiceServer) AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AssignRole not implemented")
@@ -620,6 +638,24 @@ func _AuthService_ListRoles_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CreateRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_CreateRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CreateRole(ctx, req.(*CreateRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_AssignRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AssignRoleRequest)
 	if err := dec(in); err != nil {
@@ -782,6 +818,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListRoles",
 			Handler:    _AuthService_ListRoles_Handler,
+		},
+		{
+			MethodName: "CreateRole",
+			Handler:    _AuthService_CreateRole_Handler,
 		},
 		{
 			MethodName: "AssignRole",

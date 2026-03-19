@@ -67,25 +67,24 @@ func getUserResultToProto(v domainservice.AdminUserView) *pb.AdminUserInfo {
 func getUserRolesResultToProto(roles []domainservice.RoleView) *pb.GetUserRolesResponse {
 	pbRoles := make([]*pb.RoleInfo, len(roles))
 	for i, r := range roles {
-		pbRoles[i] = &pb.RoleInfo{
-			Id:          r.ID.String(),
-			Code:        r.Code,
-			Name:        r.Name,
-			Description: r.Description,
-		}
+		pbRoles[i] = roleViewToProto(r)
 	}
 	return &pb.GetUserRolesResponse{Roles: pbRoles}
+}
+
+func roleViewToProto(r domainservice.RoleView) *pb.RoleInfo {
+	return &pb.RoleInfo{
+		Id:          r.ID.String(),
+		Code:        r.Code,
+		Name:        r.Name,
+		Description: r.Description,
+	}
 }
 
 func listRolesResultToProto(roles []domainservice.RoleView) *pb.ListRolesResponse {
 	pbRoles := make([]*pb.RoleInfo, len(roles))
 	for i, r := range roles {
-		pbRoles[i] = &pb.RoleInfo{
-			Id:          r.ID.String(),
-			Code:        r.Code,
-			Name:        r.Name,
-			Description: r.Description,
-		}
+		pbRoles[i] = roleViewToProto(r)
 	}
 	return &pb.ListRolesResponse{Roles: pbRoles}
 }

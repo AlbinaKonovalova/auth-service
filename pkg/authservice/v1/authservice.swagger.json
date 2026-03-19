@@ -94,6 +94,43 @@
             "Bearer": []
           }
         ]
+      },
+      "post": {
+        "summary": "Create role",
+        "description": "Create a new role. Fails if role code already exists",
+        "operationId": "AuthService_CreateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RoleInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "roles"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
     "/api/v1/admin/roles/{role_code}/permissions": {
@@ -788,6 +825,20 @@
       "properties": {
         "success": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1CreateRoleBody": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },

@@ -73,7 +73,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 
 	accessService := access.NewAccessService(userRepo, userRoleRepo, roleRepo, rolePermRepo, permRepo, clockImpl, txManager)
 
-	roleService := role.NewRoleService(roleRepo)
+	roleService := role.NewRoleService(roleRepo, uuidGen, txManager)
 
 	permissionService := permission.NewPermissionService(permRepo)
 

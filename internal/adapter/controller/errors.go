@@ -19,7 +19,8 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 	case errors.Is(err, domain.ErrUserNotFound):
 		return status.Error(codes.NotFound, err.Error())
 
-	case errors.Is(err, domain.ErrEmailAlreadyTaken):
+	case errors.Is(err, domain.ErrEmailAlreadyTaken),
+		errors.Is(err, domain.ErrDuplicateRoleCode):
 		return status.Error(codes.AlreadyExists, err.Error())
 
 	case errors.Is(err, domain.ErrRoleNotFound),
@@ -29,7 +30,7 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 		return status.Error(codes.NotFound, err.Error())
 
 	case errors.Is(err, domain.ErrInvalidRoleCode),
-		errors.Is(err, domain.ErrDuplicateRoleCode),
+		errors.Is(err, domain.ErrRoleNameEmpty),
 		errors.Is(err, domain.ErrInvalidUserID),
 		errors.Is(err, domain.ErrInvalidEmail),
 		errors.Is(err, domain.ErrInvalidPasswordHash),
