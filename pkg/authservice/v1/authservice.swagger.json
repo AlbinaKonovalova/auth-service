@@ -8,6 +8,27 @@
   "tags": [
     {
       "name": "AuthService"
+    },
+    {
+      "name": "auth"
+    },
+    {
+      "name": "users"
+    },
+    {
+      "name": "user role assignments"
+    },
+    {
+      "name": "roles"
+    },
+    {
+      "name": "role permission assignments"
+    },
+    {
+      "name": "permissions"
+    },
+    {
+      "name": "system"
     }
   ],
   "consumes": [
@@ -17,6 +38,187 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/permissions": {
+      "get": {
+        "summary": "List permissions",
+        "description": "Get the full list of permissions",
+        "operationId": "AuthService_ListPermissions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPermissionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "permissions"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/roles": {
+      "get": {
+        "summary": "List roles",
+        "description": "Get the full list of roles",
+        "operationId": "AuthService_ListRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "roles"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/roles/{role_code}/permissions": {
+      "get": {
+        "summary": "Get role permissions",
+        "description": "Get the list of permissions assigned to a role by its code",
+        "operationId": "AuthService_GetRolePermissions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRolePermissionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "role permission assignments"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Assign permission to role",
+        "description": "Assign a permission to a role by permission code. Idempotent: assigning an already assigned permission succeeds without error",
+        "operationId": "AuthService_AssignPermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignPermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "assignment",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AssignPermissionBody"
+            }
+          }
+        ],
+        "tags": [
+          "role permission assignments"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/roles/{role_code}/permissions/{permission_code}": {
+      "delete": {
+        "summary": "Revoke permission from role",
+        "description": "Revoke a permission from a role. Fails if the permission is not assigned to the role",
+        "operationId": "AuthService_RevokePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RevokePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "permission_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "role permission assignments"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/users": {
       "get": {
         "summary": "List users",
@@ -65,7 +267,7 @@
           }
         ],
         "tags": [
-          "admin"
+          "users"
         ],
         "security": [
           {
@@ -102,7 +304,7 @@
           }
         ],
         "tags": [
-          "admin"
+          "users"
         ],
         "security": [
           {
@@ -139,7 +341,7 @@
           }
         ],
         "tags": [
-          "admin"
+          "users"
         ],
         "security": [
           {
@@ -176,7 +378,7 @@
           }
         ],
         "tags": [
-          "admin"
+          "users"
         ],
         "security": [
           {
@@ -213,7 +415,130 @@
           }
         ],
         "tags": [
-          "admin"
+          "users"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/roles": {
+      "get": {
+        "summary": "Get user roles",
+        "description": "Get the list of roles assigned to a user by their UUID",
+        "operationId": "AuthService_GetUserRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user role assignments"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Assign role to user",
+        "description": "Assign a role to a user by role code. Idempotent: assigning an already assigned role succeeds without error",
+        "operationId": "AuthService_AssignRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "assignment",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AssignRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "user role assignments"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/roles/{role_code}": {
+      "delete": {
+        "summary": "Revoke role from user",
+        "description": "Revoke a role from a user. Fails if the role is not assigned or it is the user's last role",
+        "operationId": "AuthService_RevokeRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RevokeRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user role assignments"
         ],
         "security": [
           {
@@ -434,6 +759,38 @@
         }
       }
     },
+    "v1AssignPermissionBody": {
+      "type": "object",
+      "properties": {
+        "permission_code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AssignPermissionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1AssignRoleBody": {
+      "type": "object",
+      "properties": {
+        "role_code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AssignRoleResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1CreateUserRequest": {
       "type": "object",
       "properties": {
@@ -479,11 +836,59 @@
         }
       }
     },
+    "v1GetRolePermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PermissionInfo"
+          }
+        }
+      }
+    },
+    "v1GetUserRolesResponse": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RoleInfo"
+          }
+        }
+      }
+    },
     "v1HealthzResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
+        }
+      }
+    },
+    "v1ListPermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PermissionInfo"
+          }
+        }
+      }
+    },
+    "v1ListRolesResponse": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RoleInfo"
+          }
         }
       }
     },
@@ -570,6 +975,20 @@
         }
       }
     },
+    "v1PermissionInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
     "v1RefreshRequest": {
       "type": "object"
     },
@@ -581,6 +1000,39 @@
         },
         "user": {
           "$ref": "#/definitions/v1UserInfo"
+        }
+      }
+    },
+    "v1RevokePermissionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1RevokeRoleResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1RoleInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },

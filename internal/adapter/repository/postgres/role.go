@@ -3,8 +3,10 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
+	"github.com/AlbinaKonovalova/auth-service/internal/domain"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
@@ -77,6 +79,51 @@ func (r *RoleRepository) FindByCodes(ctx context.Context, codes []string) ([]ent
 		var role entity.Role
 		if err := rows.Scan(&role.ID, &role.Code, &role.Name, &role.Description); err != nil {
 			return nil, fmt.Errorf("scan role by code: %w", err)
+		}
+		roles = append(roles, role)
+	}
+
+	return roles, rows.Err()
+}
+
+func (r *RoleRepository) FindByCode(ctx context.Context, code string) (*entity.Role, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, name, description
+		FROM roles
+		WHERE code = $1`
+
+	var role entity.Role
+	err := q.QueryRowContext(ctx, query, code).Scan(&role.ID, &role.Code, &role.Name, &role.Description)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrRoleNotFound
+		}
+		return nil, fmt.Errorf("find role by code: %w", err)
+	}
+
+	return &role, nil
+}
+
+func (r *RoleRepository) FindAll(ctx context.Context) ([]entity.Role, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, name, description
+		FROM roles`
+
+	rows, err := q.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("find all roles: %w", err)
+	}
+	defer rows.Close()
+
+	var roles []entity.Role
+	for rows.Next() {
+		var role entity.Role
+		if err := rows.Scan(&role.ID, &role.Code, &role.Name, &role.Description); err != nil {
+			return nil, fmt.Errorf("scan role: %w", err)
 		}
 		roles = append(roles, role)
 	}

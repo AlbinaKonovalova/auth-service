@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserListItem struct {
+type AdminUserView struct {
 	ID       uuid.UUID
 	Email    string
 	IsActive bool
@@ -18,7 +18,7 @@ type UserListItem struct {
 }
 
 type UserList struct {
-	Items   []UserListItem
+	Items   []AdminUserView
 	Total   int
 	Page    int
 	PerPage int
@@ -38,37 +38,28 @@ func BuildUserList(
 
 	if len(users) == 0 {
 		return UserList{
-			Items:   []UserListItem{},
+			Items:   []AdminUserView{},
 			Total:   total,
 			Page:    page,
 			PerPage: perPage,
 		}, nil
 	}
 
-	roleByID := make(map[uuid.UUID]entity.Role, len(roles))
-	for _, r := range roles {
-		roleByID[r.ID] = r
-	}
+	roleByID := buildRoleByID(roles)
 
-	rolesByUser := make(map[uuid.UUID][]string)
+	rolesByUser := make(map[uuid.UUID][]entity.UserRole)
 	for _, ur := range userRoles {
-		role, ok := roleByID[ur.RoleID]
-		if !ok {
-			return UserList{}, domain.ErrRoleNotFound
-		}
-		rolesByUser[ur.UserID] = append(rolesByUser[ur.UserID], role.Code)
+		rolesByUser[ur.UserID] = append(rolesByUser[ur.UserID], ur)
 	}
 
-	items := make([]UserListItem, len(users))
+	items := make([]AdminUserView, len(users))
 	for i, u := range users {
-		roleCodes := rolesByUser[u.ID]
-		if roleCodes == nil {
-			roleCodes = []string{}
+		roleCodes, err := buildSortedUniqueRoleCodes(rolesByUser[u.ID], roleByID)
+		if err != nil {
+			return UserList{}, err
 		}
 
-		sort.Strings(roleCodes)
-
-		items[i] = UserListItem{
+		items[i] = AdminUserView{
 			ID:       u.ID,
 			Email:    u.Email,
 			IsActive: u.IsActive,
@@ -84,35 +75,63 @@ func BuildUserList(
 	}, nil
 }
 
-// BuildUserItem собирает доменное представление одного пользователя с его ролями.
-// Используется в GetUser сценарии.
-func BuildUserItem(
+// BuildAdminUserView собирает доменное представление одного пользователя с его ролями.
+// Используется в GetUser и CreateUser сценариях.
+func BuildAdminUserView(
 	user entity.User,
 	userRoles []entity.UserRole,
 	roles []entity.Role,
-) (UserListItem, error) {
-	roleByID := make(map[uuid.UUID]entity.Role, len(roles))
-	for _, r := range roles {
-		roleByID[r.ID] = r
+) (AdminUserView, error) {
+	roleByID := buildRoleByID(roles)
+
+	roleCodes, err := buildSortedUniqueRoleCodes(userRoles, roleByID)
+	if err != nil {
+		return AdminUserView{}, err
 	}
 
-	roleCodes := make([]string, 0, len(userRoles))
-	for _, ur := range userRoles {
-		role, ok := roleByID[ur.RoleID]
-		if !ok {
-			return UserListItem{}, domain.ErrRoleNotFound
-		}
-		roleCodes = append(roleCodes, role.Code)
-	}
-
-	sort.Strings(roleCodes)
-
-	return UserListItem{
+	return AdminUserView{
 		ID:       user.ID,
 		Email:    user.Email,
 		IsActive: user.IsActive,
 		Roles:    roleCodes,
 	}, nil
+}
+
+func buildRoleByID(roles []entity.Role) map[uuid.UUID]entity.Role {
+	roleByID := make(map[uuid.UUID]entity.Role, len(roles))
+	for _, r := range roles {
+		roleByID[r.ID] = r
+	}
+	return roleByID
+}
+
+func buildSortedUniqueRoleCodes(
+	userRoles []entity.UserRole,
+	roleByID map[uuid.UUID]entity.Role,
+) ([]string, error) {
+	if len(userRoles) == 0 {
+		return []string{}, nil
+	}
+
+	seen := make(map[string]struct{}, len(userRoles))
+	roleCodes := make([]string, 0, len(userRoles))
+
+	for _, ur := range userRoles {
+		role, ok := roleByID[ur.RoleID]
+		if !ok {
+			return nil, domain.ErrDataIntegrityViolation
+		}
+
+		if _, exists := seen[role.Code]; exists {
+			continue
+		}
+		seen[role.Code] = struct{}{}
+		roleCodes = append(roleCodes, role.Code)
+	}
+
+	sort.Strings(roleCodes)
+
+	return roleCodes, nil
 }
 
 func ValidateUserListFilters(

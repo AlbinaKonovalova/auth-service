@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
 )
 
@@ -28,38 +28,88 @@ func refreshResultToProto(result dto.RefreshResult) *pb.RefreshResponse {
 	}
 }
 
-func createUserResultToProto(r input.CreateUserResult) *pb.CreateUserResponse {
-	return &pb.CreateUserResponse{
-		Id:       r.ID.String(),
-		Email:    r.Email,
-		IsActive: r.IsActive,
-		Roles:    r.Roles,
+func adminUserViewToProto(v domainservice.AdminUserView) *pb.AdminUserInfo {
+	return &pb.AdminUserInfo{
+		Id:       v.ID.String(),
+		Email:    v.Email,
+		IsActive: v.IsActive,
+		Roles:    v.Roles,
 	}
 }
 
-func listUsersResultToProto(r input.ListUsersResult) *pb.ListUsersResponse {
-	users := make([]*pb.AdminUserInfo, len(r.Users))
-	for i, u := range r.Users {
-		users[i] = &pb.AdminUserInfo{
-			Id:       u.ID.String(),
-			Email:    u.Email,
-			IsActive: u.IsActive,
-			Roles:    u.Roles,
-		}
+func createUserResultToProto(v domainservice.AdminUserView) *pb.CreateUserResponse {
+	return &pb.CreateUserResponse{
+		Id:       v.ID.String(),
+		Email:    v.Email,
+		IsActive: v.IsActive,
+		Roles:    v.Roles,
 	}
+}
+
+func userListToProto(v domainservice.UserList) *pb.ListUsersResponse {
+	users := make([]*pb.AdminUserInfo, len(v.Items))
+	for i, item := range v.Items {
+		users[i] = adminUserViewToProto(item)
+	}
+
 	return &pb.ListUsersResponse{
 		Users:   users,
-		Total:   int32(r.Total),
-		Page:    int32(r.Page),
-		PerPage: int32(r.PerPage),
+		Total:   int32(v.Total),
+		Page:    int32(v.Page),
+		PerPage: int32(v.PerPage),
 	}
 }
 
-func getUserResultToProto(r input.GetUserResult) *pb.AdminUserInfo {
-	return &pb.AdminUserInfo{
-		Id:       r.ID.String(),
-		Email:    r.Email,
-		IsActive: r.IsActive,
-		Roles:    r.Roles,
+func getUserResultToProto(v domainservice.AdminUserView) *pb.AdminUserInfo {
+	return adminUserViewToProto(v)
+}
+
+func getUserRolesResultToProto(roles []domainservice.RoleView) *pb.GetUserRolesResponse {
+	pbRoles := make([]*pb.RoleInfo, len(roles))
+	for i, r := range roles {
+		pbRoles[i] = &pb.RoleInfo{
+			Id:          r.ID.String(),
+			Code:        r.Code,
+			Name:        r.Name,
+			Description: r.Description,
+		}
 	}
+	return &pb.GetUserRolesResponse{Roles: pbRoles}
+}
+
+func listRolesResultToProto(roles []domainservice.RoleView) *pb.ListRolesResponse {
+	pbRoles := make([]*pb.RoleInfo, len(roles))
+	for i, r := range roles {
+		pbRoles[i] = &pb.RoleInfo{
+			Id:          r.ID.String(),
+			Code:        r.Code,
+			Name:        r.Name,
+			Description: r.Description,
+		}
+	}
+	return &pb.ListRolesResponse{Roles: pbRoles}
+}
+
+func listPermissionsResultToProto(permissions []domainservice.PermissionView) *pb.ListPermissionsResponse {
+	pbPerms := make([]*pb.PermissionInfo, len(permissions))
+	for i, p := range permissions {
+		pbPerms[i] = &pb.PermissionInfo{
+			Id:          p.ID.String(),
+			Code:        p.Code,
+			Description: p.Description,
+		}
+	}
+	return &pb.ListPermissionsResponse{Permissions: pbPerms}
+}
+
+func getRolePermissionsResultToProto(permissions []domainservice.PermissionView) *pb.GetRolePermissionsResponse {
+	pbPerms := make([]*pb.PermissionInfo, len(permissions))
+	for i, p := range permissions {
+		pbPerms[i] = &pb.PermissionInfo{
+			Id:          p.ID.String(),
+			Code:        p.Code,
+			Description: p.Description,
+		}
+	}
+	return &pb.GetRolePermissionsResponse{Permissions: pbPerms}
 }

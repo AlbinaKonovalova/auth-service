@@ -9,28 +9,27 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/dto"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
 	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-func (s *UserService) ListUsers(ctx context.Context, filters dto.UserListFilters) (input.ListUsersResult, error) {
+func (s *UserService) ListUsers(ctx context.Context, filters dto.UserListFilters) (domainservice.UserList, error) {
 	var foundRolesByFilter []entity.Role
 	var err error
 
 	if filters.Role != "" {
 		foundRolesByFilter, err = s.roles.FindByCodes(ctx, []string{filters.Role})
 		if err != nil {
-			return input.ListUsersResult{}, fmt.Errorf("find role by code: %w", err)
+			return domainservice.UserList{}, fmt.Errorf("find role by code: %w", err)
 		}
 	}
 
 	filters, err = domainservice.ValidateUserListFilters(filters, foundRolesByFilter)
 	if err != nil {
-		return input.ListUsersResult{}, err
+		return domainservice.UserList{}, err
 	}
 
 	foundUsers, total, err := s.users.List(ctx, filters)
 	if err != nil {
-		return input.ListUsersResult{}, fmt.Errorf("list users: %w", err)
+		return domainservice.UserList{}, fmt.Errorf("list users: %w", err)
 	}
 
 	userIDs := make([]uuid.UUID, len(foundUsers))
@@ -40,7 +39,7 @@ func (s *UserService) ListUsers(ctx context.Context, filters dto.UserListFilters
 
 	userRoleRows, err := s.userRoles.FindByUserIDs(ctx, userIDs)
 	if err != nil {
-		return input.ListUsersResult{}, fmt.Errorf("find user roles: %w", err)
+		return domainservice.UserList{}, fmt.Errorf("find user roles: %w", err)
 	}
 
 	roleIDSet := make(map[uuid.UUID]struct{}, len(userRoleRows))
@@ -55,10 +54,10 @@ func (s *UserService) ListUsers(ctx context.Context, filters dto.UserListFilters
 
 	roleList, err := s.roles.FindByIDs(ctx, roleIDs)
 	if err != nil {
-		return input.ListUsersResult{}, fmt.Errorf("find roles: %w", err)
+		return domainservice.UserList{}, fmt.Errorf("find roles: %w", err)
 	}
 
-	userList, err := domainservice.BuildUserList(
+	return domainservice.BuildUserList(
 		foundUsers,
 		userRoleRows,
 		roleList,
@@ -66,24 +65,4 @@ func (s *UserService) ListUsers(ctx context.Context, filters dto.UserListFilters
 		filters.Page,
 		filters.PerPage,
 	)
-	if err != nil {
-		return input.ListUsersResult{}, err
-	}
-
-	results := make([]input.GetUserResult, len(userList.Items))
-	for i, item := range userList.Items {
-		results[i] = input.GetUserResult{
-			ID:       item.ID,
-			Email:    item.Email,
-			IsActive: item.IsActive,
-			Roles:    item.Roles,
-		}
-	}
-
-	return input.ListUsersResult{
-		Users:   results,
-		Total:   userList.Total,
-		Page:    userList.Page,
-		PerPage: userList.PerPage,
-	}, nil
 }
