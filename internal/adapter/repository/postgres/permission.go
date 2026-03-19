@@ -115,3 +115,34 @@ func (r *PermissionRepository) FindAll(ctx context.Context) ([]entity.Permission
 
 	return permissions, rows.Err()
 }
+
+func (r *PermissionRepository) ExistsByCode(ctx context.Context, code string) (bool, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `SELECT EXISTS(SELECT 1 FROM permissions WHERE code = $1)`
+
+	var exists bool
+	if err := q.QueryRowContext(ctx, query, code).Scan(&exists); err != nil {
+		return false, fmt.Errorf("check permission exists by code: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *PermissionRepository) Create(ctx context.Context, p entity.Permission) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		INSERT INTO permissions (id, code, description)
+		VALUES ($1, $2, $3)`
+
+	if _, err := q.ExecContext(ctx, query, p.ID, p.Code, p.Description); err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return domain.ErrDuplicatePermissionCode
+		}
+		return fmt.Errorf("create permission: %w", err)
+	}
+
+	return nil
+}

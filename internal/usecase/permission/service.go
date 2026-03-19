@@ -8,8 +8,18 @@ import (
 // Оркестрирует сценарии управления справочником permissions.
 type PermissionService struct {
 	permRepo output.PermissionRepository
+	uuidGen  output.UUIDGenerator
+	tx       output.TxManager
 }
 
-func NewPermissionService(permRepo output.PermissionRepository) *PermissionService {
-	return &PermissionService{permRepo: permRepo}
+func NewPermissionService(
+	permRepo output.PermissionRepository,
+	uuidGen output.UUIDGenerator,
+	tx output.TxManager,
+) *PermissionService {
+	return &PermissionService{
+		permRepo: permRepo,
+		uuidGen:  uuidGen,
+		tx:       tx,
+	}
 }

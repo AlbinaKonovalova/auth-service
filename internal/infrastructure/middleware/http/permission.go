@@ -70,6 +70,10 @@ func requiredAdminPermission(method, path string) (string, bool) {
 	case method == http.MethodPost && path == "/api/v1/admin/roles":
 		return "users.write", true
 
+	// DELETE /api/v1/admin/roles/{role_code}
+	case method == http.MethodDelete && isAdminRoleByCode(path):
+		return "users.write", true
+
 	// GET /api/v1/admin/roles/{role_code}/permissions
 	case method == http.MethodGet && isAdminRolePermissionsPath(path):
 		return "users.read", true
@@ -85,6 +89,10 @@ func requiredAdminPermission(method, path string) (string, bool) {
 	// GET /api/v1/admin/permissions
 	case method == http.MethodGet && path == "/api/v1/admin/permissions":
 		return "users.read", true
+
+	// POST /api/v1/admin/permissions
+	case method == http.MethodPost && path == "/api/v1/admin/permissions":
+		return "users.write", true
 
 	default:
 		// Unknown admin routes are denied by default.
@@ -163,6 +171,17 @@ func isAdminUserRoleAction(path string) bool {
 	roleCode := rest[len("roles/"):]
 
 	return roleCode != "" && !strings.Contains(roleCode, "/")
+}
+
+// isAdminRoleByCode возвращает true если path точно соответствует
+// /api/v1/admin/roles/{role_code}: непустой role_code, без вложенных сегментов.
+func isAdminRoleByCode(path string) bool {
+	const prefix = "/api/v1/admin/roles/"
+	if !strings.HasPrefix(path, prefix) {
+		return false
+	}
+	rest := path[len(prefix):]
+	return rest != "" && !strings.Contains(rest, "/")
 }
 
 // isAdminRolePermissionsPath возвращает true если path точно соответствует

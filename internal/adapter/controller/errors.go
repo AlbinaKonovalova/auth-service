@@ -16,11 +16,15 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 	case errors.Is(err, domain.ErrUserInactive):
 		return status.Error(codes.FailedPrecondition, err.Error())
 
+	case errors.Is(err, domain.ErrRoleInUse):
+		return status.Error(codes.FailedPrecondition, err.Error())
+
 	case errors.Is(err, domain.ErrUserNotFound):
 		return status.Error(codes.NotFound, err.Error())
 
 	case errors.Is(err, domain.ErrEmailAlreadyTaken),
-		errors.Is(err, domain.ErrDuplicateRoleCode):
+		errors.Is(err, domain.ErrDuplicateRoleCode),
+		errors.Is(err, domain.ErrDuplicatePermissionCode):
 		return status.Error(codes.AlreadyExists, err.Error())
 
 	case errors.Is(err, domain.ErrRoleNotFound),
@@ -39,6 +43,7 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 		errors.Is(err, domain.ErrInvalidRolePermission),
 		errors.Is(err, domain.ErrInvalidUserList),
 		errors.Is(err, domain.ErrInvalidPermissionCode),
+		errors.Is(err, domain.ErrPermissionDescriptionEmpty),
 		errors.Is(err, domain.ErrUserMustHaveRole),
 		errors.Is(err, domain.ErrCannotRevokeLastRole):
 		return status.Error(codes.InvalidArgument, err.Error())

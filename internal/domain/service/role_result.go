@@ -16,6 +16,28 @@ type RoleView struct {
 	Description string
 }
 
+// RoleViewFromEntity конвертирует entity.Role в RoleView.
+// Единственный источник истины для маппинга роли в доменное представление.
+// Используется в CreateRole и других сценариях, где нужно вернуть одну роль.
+func RoleViewFromEntity(r entity.Role) RoleView {
+	return RoleView{
+		ID:          r.ID,
+		Code:        r.Code,
+		Name:        r.Name,
+		Description: r.Description,
+	}
+}
+
+// ValidateRoleDeletion проверяет доменное правило:
+// роль нельзя удалить, пока она назначена пользователям или имеет назначенные permissions.
+// Возвращает domain.ErrRoleInUse если хотя бы одна из связей существует.
+func ValidateRoleDeletion(hasUsers bool, hasPermissions bool) error {
+	if hasUsers || hasPermissions {
+		return domain.ErrRoleInUse
+	}
+	return nil
+}
+
 // BuildRoleListResult преобразует []entity.Role в []RoleView.
 // Сортирует по code — стабильный порядок business result зафиксирован здесь,
 // а не делегируется ORDER BY в repo.
@@ -23,12 +45,7 @@ type RoleView struct {
 func BuildRoleListResult(roles []entity.Role) []RoleView {
 	result := make([]RoleView, len(roles))
 	for i, r := range roles {
-		result[i] = RoleView{
-			ID:          r.ID,
-			Code:        r.Code,
-			Name:        r.Name,
-			Description: r.Description,
-		}
+		result[i] = RoleViewFromEntity(r)
 	}
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Code < result[j].Code
@@ -67,12 +84,7 @@ func BuildUserRolesResult(userRoles []entity.UserRole, roles []entity.Role) ([]R
 			return nil, domain.ErrDataIntegrityViolation
 		}
 
-		result = append(result, RoleView{
-			ID:          r.ID,
-			Code:        r.Code,
-			Name:        r.Name,
-			Description: r.Description,
-		})
+		result = append(result, RoleViewFromEntity(r))
 	}
 
 	sort.Slice(result, func(i, j int) bool {

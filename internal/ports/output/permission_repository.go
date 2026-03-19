@@ -13,4 +13,6 @@ type PermissionRepository interface {
 	FindByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.Permission, error)
 	FindByCode(ctx context.Context, code string) (*entity.Permission, error)
 	FindAll(ctx context.Context) ([]entity.Permission, error)
+	ExistsByCode(ctx context.Context, code string) (bool, error)
+	Create(ctx context.Context, p entity.Permission) error
 }

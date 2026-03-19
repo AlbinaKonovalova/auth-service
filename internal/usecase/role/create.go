@@ -18,7 +18,8 @@ import (
 //  3. внутри tx — проверка уникальности code; если code занят — domain.ErrDuplicateRoleCode
 //  4. внутри tx — вставка новой роли; при race unique violation в DB также возвращает domain.ErrDuplicateRoleCode
 //
-// Usecase оркестрирует шаги; бизнес-правила (валидация code, name) живут в domain.
+// Итоговое представление формируется через domain/service.RoleViewFromEntity —
+// единственный источник истины для маппинга entity.Role в доменный result.
 func (s *RoleService) CreateRole(ctx context.Context, in input.CreateRoleInput) (domainservice.RoleView, error) {
 	roleCode, err := value.NewRoleCode(in.Code)
 	if err != nil {
@@ -55,10 +56,5 @@ func (s *RoleService) CreateRole(ctx context.Context, in input.CreateRoleInput) 
 		return domainservice.RoleView{}, err
 	}
 
-	return domainservice.RoleView{
-		ID:          role.ID,
-		Code:        role.Code,
-		Name:        role.Name,
-		Description: role.Description,
-	}, nil
+	return domainservice.RoleViewFromEntity(role), nil
 }

@@ -16,6 +16,16 @@ type PermissionView struct {
 	Description string
 }
 
+// PermissionViewFromEntity конвертирует entity.Permission в PermissionView.
+// Единственный источник истины для маппинга permission в доменное представление.
+func PermissionViewFromEntity(p entity.Permission) PermissionView {
+	return PermissionView{
+		ID:          p.ID,
+		Code:        p.Code,
+		Description: p.Description,
+	}
+}
+
 // BuildPermissionListResult преобразует []entity.Permission в []PermissionView.
 // Сортирует по code — стабильный порядок business result зафиксирован здесь,
 // а не делегируется ORDER BY в repo.
@@ -23,11 +33,7 @@ type PermissionView struct {
 func BuildPermissionListResult(permissions []entity.Permission) []PermissionView {
 	result := make([]PermissionView, len(permissions))
 	for i, p := range permissions {
-		result[i] = PermissionView{
-			ID:          p.ID,
-			Code:        p.Code,
-			Description: p.Description,
-		}
+		result[i] = PermissionViewFromEntity(p)
 	}
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Code < result[j].Code
@@ -68,11 +74,7 @@ func BuildRolePermissionsResult(rolePerms []entity.RolePermission, permissions [
 			return nil, domain.ErrDataIntegrityViolation
 		}
 
-		result = append(result, PermissionView{
-			ID:          p.ID,
-			Code:        p.Code,
-			Description: p.Description,
-		})
+		result = append(result, PermissionViewFromEntity(p))
 	}
 
 	sort.Slice(result, func(i, j int) bool {

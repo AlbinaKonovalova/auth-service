@@ -106,6 +106,30 @@ func (r *RoleRepository) FindByCode(ctx context.Context, code string) (*entity.R
 	return &role, nil
 }
 
+// FindByCodeForUpdate читает роль с блокировкой строки (SELECT ... FOR UPDATE).
+// Используется в write-сценариях внутри транзакции — гарантирует, что параллельная
+// транзакция не изменит роль пока текущая не завершится.
+func (r *RoleRepository) FindByCodeForUpdate(ctx context.Context, code string) (*entity.Role, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, name, description
+		FROM roles
+		WHERE code = $1
+		FOR UPDATE`
+
+	var role entity.Role
+	err := q.QueryRowContext(ctx, query, code).Scan(&role.ID, &role.Code, &role.Name, &role.Description)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrRoleNotFound
+		}
+		return nil, fmt.Errorf("find role by code for update: %w", err)
+	}
+
+	return &role, nil
+}
+
 func (r *RoleRepository) FindAll(ctx context.Context) ([]entity.Role, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -157,6 +181,28 @@ func (r *RoleRepository) Create(ctx context.Context, role entity.Role) error {
 			return domain.ErrDuplicateRoleCode
 		}
 		return fmt.Errorf("create role: %w", err)
+	}
+
+	return nil
+}
+
+// Delete удаляет роль по ID. Проверяет RowsAffected — если 0, возвращает ErrRoleNotFound.
+func (r *RoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `DELETE FROM roles WHERE id = $1`
+
+	result, err := q.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete role: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete role: rows affected: %w", err)
+	}
+	if affected == 0 {
+		return domain.ErrRoleNotFound
 	}
 
 	return nil
