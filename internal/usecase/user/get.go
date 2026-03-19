@@ -7,18 +7,17 @@ import (
 	"github.com/google/uuid"
 
 	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
-	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-func (s *UserService) GetUser(ctx context.Context, id uuid.UUID) (input.GetUserResult, error) {
+func (s *UserService) GetUser(ctx context.Context, id uuid.UUID) (domainservice.AdminUserView, error) {
 	user, err := s.users.FindByID(ctx, id)
 	if err != nil {
-		return input.GetUserResult{}, fmt.Errorf("find user by id: %w", err)
+		return domainservice.AdminUserView{}, fmt.Errorf("find user by id: %w", err)
 	}
 
 	userRoles, err := s.userRoles.FindByUserID(ctx, user.ID)
 	if err != nil {
-		return input.GetUserResult{}, fmt.Errorf("find user roles: %w", err)
+		return domainservice.AdminUserView{}, fmt.Errorf("find user roles: %w", err)
 	}
 
 	roleIDs := make([]uuid.UUID, len(userRoles))
@@ -28,18 +27,8 @@ func (s *UserService) GetUser(ctx context.Context, id uuid.UUID) (input.GetUserR
 
 	roleList, err := s.roles.FindByIDs(ctx, roleIDs)
 	if err != nil {
-		return input.GetUserResult{}, fmt.Errorf("find roles: %w", err)
+		return domainservice.AdminUserView{}, fmt.Errorf("find roles: %w", err)
 	}
 
-	item, err := domainservice.BuildUserItem(*user, userRoles, roleList)
-	if err != nil {
-		return input.GetUserResult{}, err
-	}
-
-	return input.GetUserResult{
-		ID:       item.ID,
-		Email:    item.Email,
-		IsActive: item.IsActive,
-		Roles:    item.Roles,
-	}, nil
+	return domainservice.BuildAdminUserView(*user, userRoles, roleList)
 }

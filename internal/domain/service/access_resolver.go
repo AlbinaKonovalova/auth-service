@@ -30,7 +30,7 @@ func ResolveEffectiveAccess(
 	for _, userRole := range userRoles {
 		role, ok := roleByID[userRole.RoleID]
 		if !ok {
-			return nil, nil, domain.ErrRoleNotFound
+			return nil, nil, domain.ErrDataIntegrityViolation
 		}
 
 		effectiveRoleIDs[userRole.RoleID] = struct{}{}
@@ -61,7 +61,7 @@ func ResolveEffectiveAccess(
 
 		permission, ok := permissionByID[rolePermission.PermissionID]
 		if !ok {
-			return nil, nil, domain.ErrPermissionNotFound
+			return nil, nil, domain.ErrDataIntegrityViolation
 		}
 
 		effectivePermissionCodes[permission.Code] = struct{}{}

@@ -5,13 +5,14 @@ import (
 	"fmt"
 
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
+	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-func (s *UserService) CreateUser(ctx context.Context, in input.CreateUserInput) (input.CreateUserResult, error) {
+func (s *UserService) CreateUser(ctx context.Context, in input.CreateUserInput) (domainservice.AdminUserView, error) {
 	hash, err := s.hasher.Hash(in.Password)
 	if err != nil {
-		return input.CreateUserResult{}, fmt.Errorf("hash password: %w", err)
+		return domainservice.AdminUserView{}, fmt.Errorf("hash password: %w", err)
 	}
 
 	now := s.clock.Now()
@@ -19,7 +20,7 @@ func (s *UserService) CreateUser(ctx context.Context, in input.CreateUserInput) 
 
 	foundRoles, err := s.roles.FindByCodes(ctx, in.Roles)
 	if err != nil {
-		return input.CreateUserResult{}, fmt.Errorf("find roles by codes: %w", err)
+		return domainservice.AdminUserView{}, fmt.Errorf("find roles by codes: %w", err)
 	}
 
 	aggregate, err := entity.BuildNewUserAggregate(
@@ -32,10 +33,10 @@ func (s *UserService) CreateUser(ctx context.Context, in input.CreateUserInput) 
 		now,
 	)
 	if err != nil {
-		return input.CreateUserResult{}, err
+		return domainservice.AdminUserView{}, err
 	}
 
-	err = s.tx.RunInTx(ctx, func(txCtx context.Context) error {
+	if err := s.tx.RunInTx(ctx, func(txCtx context.Context) error {
 		if err := s.users.Create(txCtx, aggregate.User); err != nil {
 			return err
 		}
@@ -47,15 +48,13 @@ func (s *UserService) CreateUser(ctx context.Context, in input.CreateUserInput) 
 		}
 
 		return nil
-	})
-	if err != nil {
-		return input.CreateUserResult{}, err
+	}); err != nil {
+		return domainservice.AdminUserView{}, err
 	}
 
-	return input.CreateUserResult{
-		ID:       aggregate.User.ID,
-		Email:    aggregate.User.Email,
-		IsActive: aggregate.User.IsActive,
-		Roles:    aggregate.AssignedRoles,
-	}, nil
+	return domainservice.BuildAdminUserView(
+		aggregate.User,
+		aggregate.UserRoles,
+		foundRoles,
+	)
 }

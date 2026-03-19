@@ -50,6 +50,38 @@ func requiredAdminPermission(method, path string) (string, bool) {
 	case method == http.MethodPost && isAdminUserAction(path, "deactivate"):
 		return "users.write", true
 
+	// GET /api/v1/admin/users/{id}/roles
+	case method == http.MethodGet && isAdminUserAction(path, "roles"):
+		return "users.read", true
+
+	// POST /api/v1/admin/users/{id}/roles
+	case method == http.MethodPost && isAdminUserAction(path, "roles"):
+		return "users.write", true
+
+	// DELETE /api/v1/admin/users/{id}/roles/{role_code}
+	case method == http.MethodDelete && isAdminUserRoleAction(path):
+		return "users.write", true
+
+	// GET /api/v1/admin/roles
+	case method == http.MethodGet && path == "/api/v1/admin/roles":
+		return "users.read", true
+
+	// GET /api/v1/admin/roles/{role_code}/permissions
+	case method == http.MethodGet && isAdminRolePermissionsPath(path):
+		return "users.read", true
+
+	// POST /api/v1/admin/roles/{role_code}/permissions
+	case method == http.MethodPost && isAdminRolePermissionsPath(path):
+		return "users.write", true
+
+	// DELETE /api/v1/admin/roles/{role_code}/permissions/{permission_code}
+	case method == http.MethodDelete && isAdminRolePermissionRevokePath(path):
+		return "users.write", true
+
+	// GET /api/v1/admin/permissions
+	case method == http.MethodGet && path == "/api/v1/admin/permissions":
+		return "users.read", true
+
 	default:
 		// Unknown admin routes are denied by default.
 		// Add an explicit case above when a new admin route is introduced.
@@ -97,4 +129,84 @@ func hasPermission(perms []string, required string) bool {
 	}
 
 	return false
+}
+
+// isAdminUserRoleAction возвращает true если path точно соответствует
+// /api/v1/admin/users/{id}/roles/{role_code}:
+// непустой id, сегмент "roles", непустой role_code, хвоста нет.
+func isAdminUserRoleAction(path string) bool {
+	const prefix = "/api/v1/admin/users/"
+	if !strings.HasPrefix(path, prefix) {
+		return false
+	}
+	rest := path[len(prefix):]
+
+	// rest: {id}/roles/{role_code}
+	slash1 := strings.Index(rest, "/")
+	if slash1 < 1 {
+		return false
+	}
+	id, rest := rest[:slash1], rest[slash1+1:]
+
+	if id == "" {
+		return false
+	}
+
+	// rest: roles/{role_code}
+	if !strings.HasPrefix(rest, "roles/") {
+		return false
+	}
+	roleCode := rest[len("roles/"):]
+
+	return roleCode != "" && !strings.Contains(roleCode, "/")
+}
+
+// isAdminRolePermissionsPath возвращает true если path точно соответствует
+// /api/v1/admin/roles/{role_code}/permissions:
+// непустой role_code, сегмент "permissions", хвоста нет.
+func isAdminRolePermissionsPath(path string) bool {
+	const prefix = "/api/v1/admin/roles/"
+	if !strings.HasPrefix(path, prefix) {
+		return false
+	}
+	rest := path[len(prefix):]
+
+	// rest: {role_code}/permissions
+	slash := strings.Index(rest, "/")
+	if slash < 1 {
+		return false
+	}
+	roleCode, suffix := rest[:slash], rest[slash+1:]
+
+	return roleCode != "" && suffix == "permissions"
+}
+
+// isAdminRolePermissionRevokePath возвращает true если path точно соответствует
+// /api/v1/admin/roles/{role_code}/permissions/{permission_code}:
+// непустой role_code, сегмент "permissions", непустой permission_code, хвоста нет.
+func isAdminRolePermissionRevokePath(path string) bool {
+	const prefix = "/api/v1/admin/roles/"
+	if !strings.HasPrefix(path, prefix) {
+		return false
+	}
+	rest := path[len(prefix):]
+
+	// rest: {role_code}/permissions/{permission_code}
+	slash := strings.Index(rest, "/")
+	if slash < 1 {
+		return false
+	}
+	roleCode, rest := rest[:slash], rest[slash+1:]
+
+	if roleCode == "" {
+		return false
+	}
+
+	// rest: permissions/{permission_code}
+	if !strings.HasPrefix(rest, "permissions/") {
+		return false
+	}
+	permCode := rest[len("permissions/"):]
+
+	return permCode != "" && !strings.Contains(permCode, "/")
 }

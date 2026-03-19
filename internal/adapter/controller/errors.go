@@ -24,6 +24,7 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 
 	case errors.Is(err, domain.ErrRoleNotFound),
 		errors.Is(err, domain.ErrUserRoleNotFound),
+		errors.Is(err, domain.ErrRolePermissionNotFound),
 		errors.Is(err, domain.ErrPermissionNotFound):
 		return status.Error(codes.NotFound, err.Error())
 
@@ -46,8 +47,9 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 		errors.Is(err, domain.ErrRefreshTokenExpired):
 		return status.Error(codes.Unauthenticated, err.Error())
 
-	case errors.Is(err, domain.ErrPermissionNotFound):
-		return status.Error(codes.NotFound, err.Error())
+	case errors.Is(err, domain.ErrDataIntegrityViolation):
+		c.logger.Error("data integrity violation", "error", err)
+		return status.Error(codes.Internal, "internal server error")
 
 	default:
 		c.logger.Error("unexpected error", "error", err)

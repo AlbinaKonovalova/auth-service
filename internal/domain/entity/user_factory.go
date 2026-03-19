@@ -10,9 +10,8 @@ import (
 )
 
 type NewUserAggregate struct {
-	User          User
-	UserRoles     []UserRole
-	AssignedRoles []string
+	User      User
+	UserRoles []UserRole
 }
 
 func BuildNewUserAggregate(
@@ -52,22 +51,17 @@ func BuildNewUserAggregate(
 	}
 
 	assignments := make([]UserRole, 0, len(foundRoles))
-	assignedCodes := make([]string, 0, len(foundRoles))
-
 	for _, role := range foundRoles {
 		userRole, err := NewUserRole(userID, role.ID, now)
 		if err != nil {
 			return NewUserAggregate{}, err
 		}
-
 		assignments = append(assignments, userRole)
-		assignedCodes = append(assignedCodes, role.Code)
 	}
 
 	return NewUserAggregate{
-		User:          user,
-		UserRoles:     assignments,
-		AssignedRoles: assignedCodes,
+		User:      user,
+		UserRoles: assignments,
 	}, nil
 }
 

@@ -40,7 +40,7 @@ func (c *AuthServiceController) ListUsers(ctx context.Context, req *pb.ListUsers
 		return nil, c.domainErrToStatus(err)
 	}
 
-	return listUsersResultToProto(result), nil
+	return userListToProto(result), nil
 }
 
 func (c *AuthServiceController) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.AdminUserInfo, error) {

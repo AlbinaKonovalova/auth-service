@@ -73,6 +73,26 @@ func (r *PermissionRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) (
 	return permissions, rows.Err()
 }
 
+func (r *PermissionRepository) FindByCode(ctx context.Context, code string) (*entity.Permission, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, description
+		FROM permissions
+		WHERE code = $1`
+
+	var p entity.Permission
+	err := q.QueryRowContext(ctx, query, code).Scan(&p.ID, &p.Code, &p.Description)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrPermissionNotFound
+		}
+		return nil, fmt.Errorf("find permission by code: %w", err)
+	}
+
+	return &p, nil
+}
+
 func (r *PermissionRepository) FindAll(ctx context.Context) ([]entity.Permission, error) {
 	q := ExtractTx(ctx, r.db)
 

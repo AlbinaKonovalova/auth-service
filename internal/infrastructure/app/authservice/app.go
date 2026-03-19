@@ -15,8 +15,11 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
 	httpinfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/http"
 	pginfra "github.com/AlbinaKonovalova/auth-service/internal/infrastructure/postgres"
+	"github.com/AlbinaKonovalova/auth-service/internal/usecase/access"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
+	"github.com/AlbinaKonovalova/auth-service/internal/usecase/permission"
+	"github.com/AlbinaKonovalova/auth-service/internal/usecase/role"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/user"
 	authservicepkg "github.com/AlbinaKonovalova/auth-service/pkg/authservice"
 )
@@ -68,7 +71,13 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 
 	userService := user.NewUserService(userRepo, roleRepo, userRoleRepo, sessionRepo, hasher, txManager, clockImpl, uuidGen)
 
-	ctrl := controller.NewAuthServiceController(authService, userService, cfg.Cookie, logger)
+	accessService := access.NewAccessService(userRepo, userRoleRepo, roleRepo, rolePermRepo, permRepo, clockImpl, txManager)
+
+	roleService := role.NewRoleService(roleRepo)
+
+	permissionService := permission.NewPermissionService(permRepo)
+
+	ctrl := controller.NewAuthServiceController(authService, userService, accessService, roleService, permissionService, cfg.Cookie, logger)
 
 	ctx := context.Background()
 	gwMux, err := httpinfra.NewGatewayMux(ctx, ctrl)

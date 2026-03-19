@@ -26,6 +26,31 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   }
   consumes: "application/json"
   produces: "application/json"
+
+  tags: {
+    name: "AuthService"
+  }
+  tags: {
+    name: "auth"
+  }
+  tags: {
+    name: "users"
+  }
+  tags: {
+    name: "user role assignments"
+  }
+  tags: {
+    name: "roles"
+  }
+  tags: {
+    name: "role permission assignments"
+  }
+  tags: {
+    name: "permissions"
+  }
+  tags: {
+    name: "system"
+  }
 };
 
 // AuthService provides authentication and authorization operations.
@@ -110,7 +135,7 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Create user"
       description: "Create a new user with optional initial roles"
-      tags: ["admin"]
+      tags: ["users"]
       security: {
         security_requirement: {
           key: "Bearer"
@@ -128,7 +153,7 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "List users"
       description: "Get paginated list of users with optional filters by is_active and role"
-      tags: ["admin"]
+      tags: ["users"]
       security: {
         security_requirement: {
           key: "Bearer"
@@ -146,7 +171,7 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get user by ID"
       description: "Get a single user by their UUID"
-      tags: ["admin"]
+      tags: ["users"]
       security: {
         security_requirement: {
           key: "Bearer"
@@ -164,7 +189,7 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Activate user"
       description: "Activate a user account by their UUID"
-      tags: ["admin"]
+      tags: ["users"]
       security: {
         security_requirement: {
           key: "Bearer"
@@ -182,7 +207,153 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Deactivate user"
       description: "Deactivate a user account and revoke all their refresh sessions"
-      tags: ["admin"]
+      tags: ["users"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // GetUserRoles returns the list of roles assigned to a user (admin API).
+  rpc GetUserRoles(GetUserRolesRequest) returns (GetUserRolesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/users/{id}/roles"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get user roles"
+      description: "Get the list of roles assigned to a user by their UUID"
+      tags: ["user role assignments"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // ListRoles returns the full list of roles (admin API).
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/roles"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List roles"
+      description: "Get the full list of roles"
+      tags: ["roles"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // AssignRole assigns a role to a user (admin API).
+  rpc AssignRole(AssignRoleRequest) returns (AssignRoleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/users/{id}/roles"
+      body: "assignment"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Assign role to user"
+      description: "Assign a role to a user by role code. Idempotent: assigning an already assigned role succeeds without error"
+      tags: ["user role assignments"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // RevokeRole revokes a role from a user (admin API).
+  rpc RevokeRole(RevokeRoleRequest) returns (RevokeRoleResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/users/{id}/roles/{role_code}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Revoke role from user"
+      description: "Revoke a role from a user. Fails if the role is not assigned or it is the user's last role"
+      tags: ["user role assignments"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // ListPermissions returns the full list of permissions (admin API).
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/permissions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List permissions"
+      description: "Get the full list of permissions"
+      tags: ["permissions"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // GetRolePermissions returns the list of permissions assigned to a role (admin API).
+  rpc GetRolePermissions(GetRolePermissionsRequest) returns (GetRolePermissionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/roles/{role_code}/permissions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get role permissions"
+      description: "Get the list of permissions assigned to a role by its code"
+      tags: ["role permission assignments"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // AssignPermission assigns a permission to a role (admin API).
+  rpc AssignPermission(AssignPermissionRequest) returns (AssignPermissionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/roles/{role_code}/permissions"
+      body: "assignment"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Assign permission to role"
+      description: "Assign a permission to a role by permission code. Idempotent: assigning an already assigned permission succeeds without error"
+      tags: ["role permission assignments"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
+  // RevokePermission revokes a permission from a role (admin API).
+  rpc RevokePermission(RevokePermissionRequest) returns (RevokePermissionResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/roles/{role_code}/permissions/{permission_code}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Revoke permission from role"
+      description: "Revoke a permission from a role. Fails if the permission is not assigned to the role"
+      tags: ["role permission assignments"]
       security: {
         security_requirement: {
           key: "Bearer"
@@ -311,5 +482,106 @@ message DeactivateUserRequest {
 }
 
 message DeactivateUserResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — Get User Roles
+
+message RoleInfo {
+  string id = 1 [json_name = "id"];
+  string code = 2 [json_name = "code"];
+  string name = 3 [json_name = "name"];
+  string description = 4 [json_name = "description"];
+}
+
+message GetUserRolesRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message GetUserRolesResponse {
+  repeated RoleInfo roles = 1 [json_name = "roles"];
+}
+
+// Admin — List Roles
+
+message ListRolesRequest {}
+
+message ListRolesResponse {
+  repeated RoleInfo roles = 1 [json_name = "roles"];
+}
+
+// Admin — Assign Role
+
+message AssignRoleBody {
+  string role_code = 1 [json_name = "role_code"];
+}
+
+message AssignRoleRequest {
+  string id = 1 [json_name = "id"];
+  AssignRoleBody assignment = 2 [json_name = "assignment"];
+}
+
+message AssignRoleResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — Revoke Role
+
+message RevokeRoleRequest {
+  string id = 1 [json_name = "id"];
+  string role_code = 2 [json_name = "role_code"];
+}
+
+message RevokeRoleResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — List Permissions
+
+message PermissionInfo {
+  string id = 1 [json_name = "id"];
+  string code = 2 [json_name = "code"];
+  string description = 3 [json_name = "description"];
+}
+
+message ListPermissionsRequest {}
+
+message ListPermissionsResponse {
+  repeated PermissionInfo permissions = 1 [json_name = "permissions"];
+}
+
+// Admin — Get Role Permissions
+
+message GetRolePermissionsRequest {
+  string role_code = 1 [json_name = "role_code"];
+}
+
+message GetRolePermissionsResponse {
+  repeated PermissionInfo permissions = 1 [json_name = "permissions"];
+}
+
+// Admin — Assign Permission to Role
+
+message AssignPermissionBody {
+  string permission_code = 1 [json_name = "permission_code"];
+}
+
+message AssignPermissionRequest {
+  string role_code = 1 [json_name = "role_code"];
+  AssignPermissionBody assignment = 2 [json_name = "assignment"];
+}
+
+message AssignPermissionResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — Revoke Permission from Role
+
+message RevokePermissionRequest {
+  string role_code = 1 [json_name = "role_code"];
+  string permission_code = 2 [json_name = "permission_code"];
+}
+
+message RevokePermissionResponse {
   bool success = 1 [json_name = "success"];
 }
