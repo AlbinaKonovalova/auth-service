@@ -26,6 +26,16 @@ func PermissionViewFromEntity(p entity.Permission) PermissionView {
 	}
 }
 
+// ValidatePermissionDeletion проверяет доменное правило:
+// permission нельзя удалить, пока он назначен хотя бы одной роли.
+// Возвращает domain.ErrPermissionInUse если связь существует.
+func ValidatePermissionDeletion(hasRoles bool) error {
+	if hasRoles {
+		return domain.ErrPermissionInUse
+	}
+	return nil
+}
+
 // BuildPermissionListResult преобразует []entity.Permission в []PermissionView.
 // Сортирует по code — стабильный порядок business result зафиксирован здесь,
 // а не делегируется ORDER BY в repo.

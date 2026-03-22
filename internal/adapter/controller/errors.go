@@ -16,7 +16,8 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 	case errors.Is(err, domain.ErrUserInactive):
 		return status.Error(codes.FailedPrecondition, err.Error())
 
-	case errors.Is(err, domain.ErrRoleInUse):
+	case errors.Is(err, domain.ErrRoleInUse),
+		errors.Is(err, domain.ErrPermissionInUse):
 		return status.Error(codes.FailedPrecondition, err.Error())
 
 	case errors.Is(err, domain.ErrUserNotFound):

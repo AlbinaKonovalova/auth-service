@@ -34,3 +34,11 @@ func (c *AuthServiceController) CreatePermission(ctx context.Context, req *pb.Cr
 
 	return permissionViewToProto(result), nil
 }
+
+func (c *AuthServiceController) DeletePermission(ctx context.Context, req *pb.DeletePermissionRequest) (*pb.DeletePermissionResponse, error) {
+	if err := c.permission.DeletePermission(ctx, req.PermissionCode); err != nil {
+		return nil, c.domainErrToStatus(err)
+	}
+
+	return &pb.DeletePermissionResponse{Success: true}, nil
+}

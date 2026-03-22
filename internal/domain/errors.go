@@ -40,6 +40,7 @@ var (
 	ErrInvalidPermissionCode      = errors.New("invalid permission code")
 	ErrDuplicatePermissionCode    = errors.New("duplicate permission code")
 	ErrPermissionDescriptionEmpty = errors.New("permission description must not be empty")
+	ErrPermissionInUse            = errors.New("permission is assigned to a role and cannot be deleted")
 
 	// Access — assign / revoke
 	ErrCannotRevokeLastRole   = errors.New("cannot revoke the last role from user")

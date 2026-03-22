@@ -7,19 +7,22 @@ import (
 // PermissionService реализует input.PermissionUseCase.
 // Оркестрирует сценарии управления справочником permissions.
 type PermissionService struct {
-	permRepo output.PermissionRepository
-	uuidGen  output.UUIDGenerator
-	tx       output.TxManager
+	permRepo     output.PermissionRepository
+	rolePermRepo output.RolePermissionRepository
+	uuidGen      output.UUIDGenerator
+	tx           output.TxManager
 }
 
 func NewPermissionService(
 	permRepo output.PermissionRepository,
+	rolePermRepo output.RolePermissionRepository,
 	uuidGen output.UUIDGenerator,
 	tx output.TxManager,
 ) *PermissionService {
 	return &PermissionService{
-		permRepo: permRepo,
-		uuidGen:  uuidGen,
-		tx:       tx,
+		permRepo:     permRepo,
+		rolePermRepo: rolePermRepo,
+		uuidGen:      uuidGen,
+		tx:           tx,
 	}
 }
