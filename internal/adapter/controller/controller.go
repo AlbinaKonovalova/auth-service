@@ -11,13 +11,14 @@ import (
 
 type AuthServiceController struct {
 	pb.UnimplementedAuthServiceServer
-	auth       input.AuthUseCase
-	user       input.UserUseCase
-	access     input.AccessUseCase
-	role       input.RoleUseCase
-	permission input.PermissionUseCase
-	cookie     config.CookieConfig
-	logger     *slog.Logger
+	auth          input.AuthUseCase
+	user          input.UserUseCase
+	access        input.AccessUseCase
+	role          input.RoleUseCase
+	permission    input.PermissionUseCase
+	passwordReset input.PasswordResetUseCase
+	cookie        config.CookieConfig
+	logger        *slog.Logger
 }
 
 func NewAuthServiceController(
@@ -26,17 +27,19 @@ func NewAuthServiceController(
 	access input.AccessUseCase,
 	role input.RoleUseCase,
 	permission input.PermissionUseCase,
+	passwordReset input.PasswordResetUseCase,
 	cookie config.CookieConfig,
 	logger *slog.Logger,
 ) *AuthServiceController {
 	return &AuthServiceController{
-		auth:       auth,
-		user:       user,
-		access:     access,
-		role:       role,
-		permission: permission,
-		cookie:     cookie,
-		logger:     logger,
+		auth:          auth,
+		user:          user,
+		access:        access,
+		role:          role,
+		permission:    permission,
+		passwordReset: passwordReset,
+		cookie:        cookie,
+		logger:        logger,
 	}
 }
 

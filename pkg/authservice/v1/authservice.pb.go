@@ -2411,6 +2411,190 @@ func (x *DeletePermissionResponse) GetSuccess() bool {
 	return false
 }
 
+type RequestPasswordResetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetRequest) Reset() {
+	*x = RequestPasswordResetRequest{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetRequest) ProtoMessage() {}
+
+func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *RequestPasswordResetRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type RequestPasswordResetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetResponse) Reset() {
+	*x = RequestPasswordResetResponse{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetResponse) ProtoMessage() {}
+
+func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *RequestPasswordResetResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type ConfirmPasswordResetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmPasswordResetRequest) Reset() {
+	*x = ConfirmPasswordResetRequest{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmPasswordResetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmPasswordResetRequest) ProtoMessage() {}
+
+func (x *ConfirmPasswordResetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmPasswordResetRequest.ProtoReflect.Descriptor instead.
+func (*ConfirmPasswordResetRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *ConfirmPasswordResetRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *ConfirmPasswordResetRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ConfirmPasswordResetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmPasswordResetResponse) Reset() {
+	*x = ConfirmPasswordResetResponse{}
+	mi := &file_authservice_v1_authservice_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmPasswordResetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmPasswordResetResponse) ProtoMessage() {}
+
+func (x *ConfirmPasswordResetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_v1_authservice_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmPasswordResetResponse.ProtoReflect.Descriptor instead.
+func (*ConfirmPasswordResetResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_v1_authservice_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *ConfirmPasswordResetResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_authservice_v1_authservice_proto protoreflect.FileDescriptor
 
 const file_authservice_v1_authservice_proto_rawDesc = "" +
@@ -2552,7 +2736,16 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	"\x17DeletePermissionRequest\x12(\n" +
 	"\x0fpermission_code\x18\x01 \x01(\tR\x0fpermission_code\"4\n" +
 	"\x18DeletePermissionResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xca(\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"3\n" +
+	"\x1bRequestPasswordResetRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\"8\n" +
+	"\x1cRequestPasswordResetResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"W\n" +
+	"\x1bConfirmPasswordResetRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\"\n" +
+	"\fnew_password\x18\x02 \x01(\tR\fnew_password\"8\n" +
+	"\x1cConfirmPasswordResetResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xff-\n" +
 	"\vAuthService\x12\x9c\x01\n" +
 	"\x05Login\x12\x1c.authservice.v1.LoginRequest\x1a\x1d.authservice.v1.LoginResponse\"V\x92A6\n" +
 	"\x04auth\x12\x05Login\x1a'Authenticate user by email and password\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/api/v1/auth/login\x12\xb6\x01\n" +
@@ -2564,7 +2757,11 @@ const file_authservice_v1_authservice_proto_rawDesc = "" +
 	"\x04auth\x12\fCurrent user\x1a#Get current authenticated user infob\f\n" +
 	"\n" +
 	"\n" +
-	"\x06Bearer\x12\x00\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/auth/me\x12u\n" +
+	"\x06Bearer\x12\x00\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/auth/me\x12\xd8\x02\n" +
+	"\x14RequestPasswordReset\x12+.authservice.v1.RequestPasswordResetRequest\x1a,.authservice.v1.RequestPasswordResetResponse\"\xe4\x01\x92A\xb2\x01\n" +
+	"\x04auth\x12\x16Request password reset\x1a\x91\x01Initiates password reset flow. Sends a reset link to the provided email if the account exists. Always returns success to prevent user enumeration\x82\xd3\xe4\x93\x02(:\x01*\"#/api/v1/auth/password-reset/request\x12\xd7\x02\n" +
+	"\x14ConfirmPasswordReset\x12+.authservice.v1.ConfirmPasswordResetRequest\x1a,.authservice.v1.ConfirmPasswordResetResponse\"\xe3\x01\x92A\xb1\x01\n" +
+	"\x04auth\x12\x16Confirm password reset\x1a\x90\x01Validates the reset token and sets a new password. Revokes all existing refresh sessions. Fails if the token is invalid, expired or already used\x82\xd3\xe4\x93\x02(:\x01*\"#/api/v1/auth/password-reset/confirm\x12u\n" +
 	"\aHealthz\x12\x1e.authservice.v1.HealthzRequest\x1a\x1f.authservice.v1.HealthzResponse\")\x92A\x16\n" +
 	"\x06system\x12\fHealth check\x82\xd3\xe4\x93\x02\n" +
 	"\x12\b/healthz\x12\xc7\x01\n" +
@@ -2687,57 +2884,61 @@ func file_authservice_v1_authservice_proto_rawDescGZIP() []byte {
 	return file_authservice_v1_authservice_proto_rawDescData
 }
 
-var file_authservice_v1_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
+var file_authservice_v1_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 53)
 var file_authservice_v1_authservice_proto_goTypes = []any{
-	(*LoginRequest)(nil),               // 0: authservice.v1.LoginRequest
-	(*LoginResponse)(nil),              // 1: authservice.v1.LoginResponse
-	(*RefreshRequest)(nil),             // 2: authservice.v1.RefreshRequest
-	(*RefreshResponse)(nil),            // 3: authservice.v1.RefreshResponse
-	(*LogoutRequest)(nil),              // 4: authservice.v1.LogoutRequest
-	(*LogoutResponse)(nil),             // 5: authservice.v1.LogoutResponse
-	(*MeRequest)(nil),                  // 6: authservice.v1.MeRequest
-	(*MeResponse)(nil),                 // 7: authservice.v1.MeResponse
-	(*HealthzRequest)(nil),             // 8: authservice.v1.HealthzRequest
-	(*HealthzResponse)(nil),            // 9: authservice.v1.HealthzResponse
-	(*UserInfo)(nil),                   // 10: authservice.v1.UserInfo
-	(*CreateUserRequest)(nil),          // 11: authservice.v1.CreateUserRequest
-	(*CreateUserResponse)(nil),         // 12: authservice.v1.CreateUserResponse
-	(*ListUsersRequest)(nil),           // 13: authservice.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),          // 14: authservice.v1.ListUsersResponse
-	(*AdminUserInfo)(nil),              // 15: authservice.v1.AdminUserInfo
-	(*GetUserRequest)(nil),             // 16: authservice.v1.GetUserRequest
-	(*ActivateUserRequest)(nil),        // 17: authservice.v1.ActivateUserRequest
-	(*ActivateUserResponse)(nil),       // 18: authservice.v1.ActivateUserResponse
-	(*DeactivateUserRequest)(nil),      // 19: authservice.v1.DeactivateUserRequest
-	(*DeactivateUserResponse)(nil),     // 20: authservice.v1.DeactivateUserResponse
-	(*RoleInfo)(nil),                   // 21: authservice.v1.RoleInfo
-	(*GetUserRolesRequest)(nil),        // 22: authservice.v1.GetUserRolesRequest
-	(*GetUserRolesResponse)(nil),       // 23: authservice.v1.GetUserRolesResponse
-	(*ListRolesRequest)(nil),           // 24: authservice.v1.ListRolesRequest
-	(*ListRolesResponse)(nil),          // 25: authservice.v1.ListRolesResponse
-	(*AssignRoleBody)(nil),             // 26: authservice.v1.AssignRoleBody
-	(*AssignRoleRequest)(nil),          // 27: authservice.v1.AssignRoleRequest
-	(*AssignRoleResponse)(nil),         // 28: authservice.v1.AssignRoleResponse
-	(*RevokeRoleRequest)(nil),          // 29: authservice.v1.RevokeRoleRequest
-	(*RevokeRoleResponse)(nil),         // 30: authservice.v1.RevokeRoleResponse
-	(*PermissionInfo)(nil),             // 31: authservice.v1.PermissionInfo
-	(*ListPermissionsRequest)(nil),     // 32: authservice.v1.ListPermissionsRequest
-	(*ListPermissionsResponse)(nil),    // 33: authservice.v1.ListPermissionsResponse
-	(*GetRolePermissionsRequest)(nil),  // 34: authservice.v1.GetRolePermissionsRequest
-	(*GetRolePermissionsResponse)(nil), // 35: authservice.v1.GetRolePermissionsResponse
-	(*AssignPermissionBody)(nil),       // 36: authservice.v1.AssignPermissionBody
-	(*AssignPermissionRequest)(nil),    // 37: authservice.v1.AssignPermissionRequest
-	(*AssignPermissionResponse)(nil),   // 38: authservice.v1.AssignPermissionResponse
-	(*RevokePermissionRequest)(nil),    // 39: authservice.v1.RevokePermissionRequest
-	(*RevokePermissionResponse)(nil),   // 40: authservice.v1.RevokePermissionResponse
-	(*CreatePermissionBody)(nil),       // 41: authservice.v1.CreatePermissionBody
-	(*CreatePermissionRequest)(nil),    // 42: authservice.v1.CreatePermissionRequest
-	(*CreateRoleBody)(nil),             // 43: authservice.v1.CreateRoleBody
-	(*CreateRoleRequest)(nil),          // 44: authservice.v1.CreateRoleRequest
-	(*DeleteRoleRequest)(nil),          // 45: authservice.v1.DeleteRoleRequest
-	(*DeleteRoleResponse)(nil),         // 46: authservice.v1.DeleteRoleResponse
-	(*DeletePermissionRequest)(nil),    // 47: authservice.v1.DeletePermissionRequest
-	(*DeletePermissionResponse)(nil),   // 48: authservice.v1.DeletePermissionResponse
+	(*LoginRequest)(nil),                 // 0: authservice.v1.LoginRequest
+	(*LoginResponse)(nil),                // 1: authservice.v1.LoginResponse
+	(*RefreshRequest)(nil),               // 2: authservice.v1.RefreshRequest
+	(*RefreshResponse)(nil),              // 3: authservice.v1.RefreshResponse
+	(*LogoutRequest)(nil),                // 4: authservice.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 5: authservice.v1.LogoutResponse
+	(*MeRequest)(nil),                    // 6: authservice.v1.MeRequest
+	(*MeResponse)(nil),                   // 7: authservice.v1.MeResponse
+	(*HealthzRequest)(nil),               // 8: authservice.v1.HealthzRequest
+	(*HealthzResponse)(nil),              // 9: authservice.v1.HealthzResponse
+	(*UserInfo)(nil),                     // 10: authservice.v1.UserInfo
+	(*CreateUserRequest)(nil),            // 11: authservice.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),           // 12: authservice.v1.CreateUserResponse
+	(*ListUsersRequest)(nil),             // 13: authservice.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),            // 14: authservice.v1.ListUsersResponse
+	(*AdminUserInfo)(nil),                // 15: authservice.v1.AdminUserInfo
+	(*GetUserRequest)(nil),               // 16: authservice.v1.GetUserRequest
+	(*ActivateUserRequest)(nil),          // 17: authservice.v1.ActivateUserRequest
+	(*ActivateUserResponse)(nil),         // 18: authservice.v1.ActivateUserResponse
+	(*DeactivateUserRequest)(nil),        // 19: authservice.v1.DeactivateUserRequest
+	(*DeactivateUserResponse)(nil),       // 20: authservice.v1.DeactivateUserResponse
+	(*RoleInfo)(nil),                     // 21: authservice.v1.RoleInfo
+	(*GetUserRolesRequest)(nil),          // 22: authservice.v1.GetUserRolesRequest
+	(*GetUserRolesResponse)(nil),         // 23: authservice.v1.GetUserRolesResponse
+	(*ListRolesRequest)(nil),             // 24: authservice.v1.ListRolesRequest
+	(*ListRolesResponse)(nil),            // 25: authservice.v1.ListRolesResponse
+	(*AssignRoleBody)(nil),               // 26: authservice.v1.AssignRoleBody
+	(*AssignRoleRequest)(nil),            // 27: authservice.v1.AssignRoleRequest
+	(*AssignRoleResponse)(nil),           // 28: authservice.v1.AssignRoleResponse
+	(*RevokeRoleRequest)(nil),            // 29: authservice.v1.RevokeRoleRequest
+	(*RevokeRoleResponse)(nil),           // 30: authservice.v1.RevokeRoleResponse
+	(*PermissionInfo)(nil),               // 31: authservice.v1.PermissionInfo
+	(*ListPermissionsRequest)(nil),       // 32: authservice.v1.ListPermissionsRequest
+	(*ListPermissionsResponse)(nil),      // 33: authservice.v1.ListPermissionsResponse
+	(*GetRolePermissionsRequest)(nil),    // 34: authservice.v1.GetRolePermissionsRequest
+	(*GetRolePermissionsResponse)(nil),   // 35: authservice.v1.GetRolePermissionsResponse
+	(*AssignPermissionBody)(nil),         // 36: authservice.v1.AssignPermissionBody
+	(*AssignPermissionRequest)(nil),      // 37: authservice.v1.AssignPermissionRequest
+	(*AssignPermissionResponse)(nil),     // 38: authservice.v1.AssignPermissionResponse
+	(*RevokePermissionRequest)(nil),      // 39: authservice.v1.RevokePermissionRequest
+	(*RevokePermissionResponse)(nil),     // 40: authservice.v1.RevokePermissionResponse
+	(*CreatePermissionBody)(nil),         // 41: authservice.v1.CreatePermissionBody
+	(*CreatePermissionRequest)(nil),      // 42: authservice.v1.CreatePermissionRequest
+	(*CreateRoleBody)(nil),               // 43: authservice.v1.CreateRoleBody
+	(*CreateRoleRequest)(nil),            // 44: authservice.v1.CreateRoleRequest
+	(*DeleteRoleRequest)(nil),            // 45: authservice.v1.DeleteRoleRequest
+	(*DeleteRoleResponse)(nil),           // 46: authservice.v1.DeleteRoleResponse
+	(*DeletePermissionRequest)(nil),      // 47: authservice.v1.DeletePermissionRequest
+	(*DeletePermissionResponse)(nil),     // 48: authservice.v1.DeletePermissionResponse
+	(*RequestPasswordResetRequest)(nil),  // 49: authservice.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil), // 50: authservice.v1.RequestPasswordResetResponse
+	(*ConfirmPasswordResetRequest)(nil),  // 51: authservice.v1.ConfirmPasswordResetRequest
+	(*ConfirmPasswordResetResponse)(nil), // 52: authservice.v1.ConfirmPasswordResetResponse
 }
 var file_authservice_v1_authservice_proto_depIdxs = []int32{
 	10, // 0: authservice.v1.LoginResponse.user:type_name -> authservice.v1.UserInfo
@@ -2755,48 +2956,52 @@ var file_authservice_v1_authservice_proto_depIdxs = []int32{
 	2,  // 12: authservice.v1.AuthService.Refresh:input_type -> authservice.v1.RefreshRequest
 	4,  // 13: authservice.v1.AuthService.Logout:input_type -> authservice.v1.LogoutRequest
 	6,  // 14: authservice.v1.AuthService.Me:input_type -> authservice.v1.MeRequest
-	8,  // 15: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
-	11, // 16: authservice.v1.AuthService.CreateUser:input_type -> authservice.v1.CreateUserRequest
-	13, // 17: authservice.v1.AuthService.ListUsers:input_type -> authservice.v1.ListUsersRequest
-	16, // 18: authservice.v1.AuthService.GetUser:input_type -> authservice.v1.GetUserRequest
-	17, // 19: authservice.v1.AuthService.ActivateUser:input_type -> authservice.v1.ActivateUserRequest
-	19, // 20: authservice.v1.AuthService.DeactivateUser:input_type -> authservice.v1.DeactivateUserRequest
-	22, // 21: authservice.v1.AuthService.GetUserRoles:input_type -> authservice.v1.GetUserRolesRequest
-	24, // 22: authservice.v1.AuthService.ListRoles:input_type -> authservice.v1.ListRolesRequest
-	44, // 23: authservice.v1.AuthService.CreateRole:input_type -> authservice.v1.CreateRoleRequest
-	45, // 24: authservice.v1.AuthService.DeleteRole:input_type -> authservice.v1.DeleteRoleRequest
-	27, // 25: authservice.v1.AuthService.AssignRole:input_type -> authservice.v1.AssignRoleRequest
-	29, // 26: authservice.v1.AuthService.RevokeRole:input_type -> authservice.v1.RevokeRoleRequest
-	32, // 27: authservice.v1.AuthService.ListPermissions:input_type -> authservice.v1.ListPermissionsRequest
-	34, // 28: authservice.v1.AuthService.GetRolePermissions:input_type -> authservice.v1.GetRolePermissionsRequest
-	37, // 29: authservice.v1.AuthService.AssignPermission:input_type -> authservice.v1.AssignPermissionRequest
-	42, // 30: authservice.v1.AuthService.CreatePermission:input_type -> authservice.v1.CreatePermissionRequest
-	47, // 31: authservice.v1.AuthService.DeletePermission:input_type -> authservice.v1.DeletePermissionRequest
-	39, // 32: authservice.v1.AuthService.RevokePermission:input_type -> authservice.v1.RevokePermissionRequest
-	1,  // 33: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
-	3,  // 34: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
-	5,  // 35: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
-	7,  // 36: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
-	9,  // 37: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
-	12, // 38: authservice.v1.AuthService.CreateUser:output_type -> authservice.v1.CreateUserResponse
-	14, // 39: authservice.v1.AuthService.ListUsers:output_type -> authservice.v1.ListUsersResponse
-	15, // 40: authservice.v1.AuthService.GetUser:output_type -> authservice.v1.AdminUserInfo
-	18, // 41: authservice.v1.AuthService.ActivateUser:output_type -> authservice.v1.ActivateUserResponse
-	20, // 42: authservice.v1.AuthService.DeactivateUser:output_type -> authservice.v1.DeactivateUserResponse
-	23, // 43: authservice.v1.AuthService.GetUserRoles:output_type -> authservice.v1.GetUserRolesResponse
-	25, // 44: authservice.v1.AuthService.ListRoles:output_type -> authservice.v1.ListRolesResponse
-	21, // 45: authservice.v1.AuthService.CreateRole:output_type -> authservice.v1.RoleInfo
-	46, // 46: authservice.v1.AuthService.DeleteRole:output_type -> authservice.v1.DeleteRoleResponse
-	28, // 47: authservice.v1.AuthService.AssignRole:output_type -> authservice.v1.AssignRoleResponse
-	30, // 48: authservice.v1.AuthService.RevokeRole:output_type -> authservice.v1.RevokeRoleResponse
-	33, // 49: authservice.v1.AuthService.ListPermissions:output_type -> authservice.v1.ListPermissionsResponse
-	35, // 50: authservice.v1.AuthService.GetRolePermissions:output_type -> authservice.v1.GetRolePermissionsResponse
-	38, // 51: authservice.v1.AuthService.AssignPermission:output_type -> authservice.v1.AssignPermissionResponse
-	31, // 52: authservice.v1.AuthService.CreatePermission:output_type -> authservice.v1.PermissionInfo
-	48, // 53: authservice.v1.AuthService.DeletePermission:output_type -> authservice.v1.DeletePermissionResponse
-	40, // 54: authservice.v1.AuthService.RevokePermission:output_type -> authservice.v1.RevokePermissionResponse
-	33, // [33:55] is the sub-list for method output_type
-	11, // [11:33] is the sub-list for method input_type
+	49, // 15: authservice.v1.AuthService.RequestPasswordReset:input_type -> authservice.v1.RequestPasswordResetRequest
+	51, // 16: authservice.v1.AuthService.ConfirmPasswordReset:input_type -> authservice.v1.ConfirmPasswordResetRequest
+	8,  // 17: authservice.v1.AuthService.Healthz:input_type -> authservice.v1.HealthzRequest
+	11, // 18: authservice.v1.AuthService.CreateUser:input_type -> authservice.v1.CreateUserRequest
+	13, // 19: authservice.v1.AuthService.ListUsers:input_type -> authservice.v1.ListUsersRequest
+	16, // 20: authservice.v1.AuthService.GetUser:input_type -> authservice.v1.GetUserRequest
+	17, // 21: authservice.v1.AuthService.ActivateUser:input_type -> authservice.v1.ActivateUserRequest
+	19, // 22: authservice.v1.AuthService.DeactivateUser:input_type -> authservice.v1.DeactivateUserRequest
+	22, // 23: authservice.v1.AuthService.GetUserRoles:input_type -> authservice.v1.GetUserRolesRequest
+	24, // 24: authservice.v1.AuthService.ListRoles:input_type -> authservice.v1.ListRolesRequest
+	44, // 25: authservice.v1.AuthService.CreateRole:input_type -> authservice.v1.CreateRoleRequest
+	45, // 26: authservice.v1.AuthService.DeleteRole:input_type -> authservice.v1.DeleteRoleRequest
+	27, // 27: authservice.v1.AuthService.AssignRole:input_type -> authservice.v1.AssignRoleRequest
+	29, // 28: authservice.v1.AuthService.RevokeRole:input_type -> authservice.v1.RevokeRoleRequest
+	32, // 29: authservice.v1.AuthService.ListPermissions:input_type -> authservice.v1.ListPermissionsRequest
+	34, // 30: authservice.v1.AuthService.GetRolePermissions:input_type -> authservice.v1.GetRolePermissionsRequest
+	37, // 31: authservice.v1.AuthService.AssignPermission:input_type -> authservice.v1.AssignPermissionRequest
+	42, // 32: authservice.v1.AuthService.CreatePermission:input_type -> authservice.v1.CreatePermissionRequest
+	47, // 33: authservice.v1.AuthService.DeletePermission:input_type -> authservice.v1.DeletePermissionRequest
+	39, // 34: authservice.v1.AuthService.RevokePermission:input_type -> authservice.v1.RevokePermissionRequest
+	1,  // 35: authservice.v1.AuthService.Login:output_type -> authservice.v1.LoginResponse
+	3,  // 36: authservice.v1.AuthService.Refresh:output_type -> authservice.v1.RefreshResponse
+	5,  // 37: authservice.v1.AuthService.Logout:output_type -> authservice.v1.LogoutResponse
+	7,  // 38: authservice.v1.AuthService.Me:output_type -> authservice.v1.MeResponse
+	50, // 39: authservice.v1.AuthService.RequestPasswordReset:output_type -> authservice.v1.RequestPasswordResetResponse
+	52, // 40: authservice.v1.AuthService.ConfirmPasswordReset:output_type -> authservice.v1.ConfirmPasswordResetResponse
+	9,  // 41: authservice.v1.AuthService.Healthz:output_type -> authservice.v1.HealthzResponse
+	12, // 42: authservice.v1.AuthService.CreateUser:output_type -> authservice.v1.CreateUserResponse
+	14, // 43: authservice.v1.AuthService.ListUsers:output_type -> authservice.v1.ListUsersResponse
+	15, // 44: authservice.v1.AuthService.GetUser:output_type -> authservice.v1.AdminUserInfo
+	18, // 45: authservice.v1.AuthService.ActivateUser:output_type -> authservice.v1.ActivateUserResponse
+	20, // 46: authservice.v1.AuthService.DeactivateUser:output_type -> authservice.v1.DeactivateUserResponse
+	23, // 47: authservice.v1.AuthService.GetUserRoles:output_type -> authservice.v1.GetUserRolesResponse
+	25, // 48: authservice.v1.AuthService.ListRoles:output_type -> authservice.v1.ListRolesResponse
+	21, // 49: authservice.v1.AuthService.CreateRole:output_type -> authservice.v1.RoleInfo
+	46, // 50: authservice.v1.AuthService.DeleteRole:output_type -> authservice.v1.DeleteRoleResponse
+	28, // 51: authservice.v1.AuthService.AssignRole:output_type -> authservice.v1.AssignRoleResponse
+	30, // 52: authservice.v1.AuthService.RevokeRole:output_type -> authservice.v1.RevokeRoleResponse
+	33, // 53: authservice.v1.AuthService.ListPermissions:output_type -> authservice.v1.ListPermissionsResponse
+	35, // 54: authservice.v1.AuthService.GetRolePermissions:output_type -> authservice.v1.GetRolePermissionsResponse
+	38, // 55: authservice.v1.AuthService.AssignPermission:output_type -> authservice.v1.AssignPermissionResponse
+	31, // 56: authservice.v1.AuthService.CreatePermission:output_type -> authservice.v1.PermissionInfo
+	48, // 57: authservice.v1.AuthService.DeletePermission:output_type -> authservice.v1.DeletePermissionResponse
+	40, // 58: authservice.v1.AuthService.RevokePermission:output_type -> authservice.v1.RevokePermissionResponse
+	35, // [35:59] is the sub-list for method output_type
+	11, // [11:35] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
 	11, // [11:11] is the sub-list for extension extendee
 	0,  // [0:11] is the sub-list for field type_name
@@ -2814,7 +3019,7 @@ func file_authservice_v1_authservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_authservice_v1_authservice_proto_rawDesc), len(file_authservice_v1_authservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   49,
+			NumMessages:   53,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

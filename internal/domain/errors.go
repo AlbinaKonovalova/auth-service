@@ -31,9 +31,13 @@ var (
 	ErrInvalidRolePermission = errors.New("invalid role permission")
 
 	// Refresh session
-	ErrRefreshTokenNotFound = errors.New("refresh token not found")
-	ErrRefreshTokenRevoked  = errors.New("refresh token has been revoked")
-	ErrRefreshTokenExpired  = errors.New("refresh token has expired")
+	ErrRefreshTokenNotFound      = errors.New("refresh token not found")
+	ErrRefreshTokenRevoked       = errors.New("refresh token has been revoked")
+	ErrRefreshTokenExpired       = errors.New("refresh token has expired")
+	ErrInvalidRefreshSessionID   = errors.New("invalid refresh session id")
+	ErrInvalidRefreshTokenHash   = errors.New("invalid refresh token hash")
+	ErrInvalidRefreshTokenTTL    = errors.New("invalid refresh token ttl")
+	ErrInvalidRefreshSessionTime = errors.New("invalid refresh session time")
 
 	// Permission
 	ErrPermissionNotFound         = errors.New("permission not found")
@@ -49,4 +53,14 @@ var (
 
 	// Data integrity — битые связи в БД, не бизнес-ошибки запроса пользователя
 	ErrDataIntegrityViolation = errors.New("data integrity violation")
+
+	// Password reset
+	ErrResetTokenNotFound      = errors.New("reset token not found")
+	ErrResetTokenExpired       = errors.New("reset token has expired")
+	ErrResetTokenUsed          = errors.New("reset token has already been used")
+	ErrInvalidResetTokenID     = errors.New("invalid reset token id")
+	ErrInvalidResetTokenUserID = errors.New("invalid reset token user id")
+	ErrInvalidResetTokenHash   = errors.New("invalid reset token hash")
+	ErrInvalidResetTokenNow    = errors.New("invalid reset token time")
+	ErrInvalidResetTokenTTL    = errors.New("invalid reset token ttl")
 )

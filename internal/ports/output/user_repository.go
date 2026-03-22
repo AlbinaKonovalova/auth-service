@@ -15,6 +15,7 @@ type UserRepository interface {
 	FindByIDForUpdate(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	FindByEmail(ctx context.Context, email value.Email) (*entity.User, error)
 	Create(ctx context.Context, user entity.User) error
+	UpdatePasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
 	List(ctx context.Context, filters dto.UserListFilters) (users []entity.User, total int, err error)
 	Activate(ctx context.Context, id uuid.UUID) error
 	Deactivate(ctx context.Context, id uuid.UUID) error

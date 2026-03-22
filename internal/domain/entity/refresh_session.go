@@ -27,19 +27,19 @@ func NewRefreshSession(
 	ttl time.Duration,
 ) (RefreshSession, error) {
 	if id == uuid.Nil {
-		return RefreshSession{}, domain.ErrInvalidUserID
+		return RefreshSession{}, domain.ErrInvalidRefreshSessionID
 	}
 	if userID == uuid.Nil {
 		return RefreshSession{}, domain.ErrInvalidUserID
 	}
 	if strings.TrimSpace(tokenHash.String()) == "" {
-		return RefreshSession{}, domain.ErrRefreshTokenNotFound
+		return RefreshSession{}, domain.ErrInvalidRefreshTokenHash
 	}
 	if now.IsZero() {
-		return RefreshSession{}, domain.ErrRefreshTokenExpired
+		return RefreshSession{}, domain.ErrInvalidRefreshSessionTime
 	}
 	if ttl <= 0 {
-		return RefreshSession{}, domain.ErrRefreshTokenExpired
+		return RefreshSession{}, domain.ErrInvalidRefreshTokenTTL
 	}
 
 	return RefreshSession{
