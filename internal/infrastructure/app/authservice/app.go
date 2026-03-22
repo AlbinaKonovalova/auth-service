@@ -10,6 +10,7 @@ import (
 
 	authadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/adapter/controller"
+	mailadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/repository/mail"
 	pgadapter "github.com/AlbinaKonovalova/auth-service/internal/adapter/repository/postgres"
 	"github.com/AlbinaKonovalova/auth-service/internal/adapter/system"
 	"github.com/AlbinaKonovalova/auth-service/internal/config"
@@ -18,6 +19,7 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/access"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/auth"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/common"
+	passwordreset "github.com/AlbinaKonovalova/auth-service/internal/usecase/password_reset"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/permission"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/role"
 	"github.com/AlbinaKonovalova/auth-service/internal/usecase/user"
@@ -47,6 +49,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	userRoleRepo := pgadapter.NewUserRoleRepository(db)
 	rolePermRepo := pgadapter.NewRolePermissionRepository(db)
 	sessionRepo := pgadapter.NewRefreshSessionRepository(db)
+	resetRepo := pgadapter.NewPasswordResetRepository(db)
 	txManager := pgadapter.NewTxManager(db)
 
 	hasher := authadapter.NewPasswordHasher(authadapter.Argon2Params{
@@ -65,6 +68,19 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	clockImpl := system.NewClock()
 	uuidGen := system.NewUUIDGenerator()
 
+	mailer := mailadapter.NewSMTPMailer(mailadapter.SMTPConfig{
+		Host:                   cfg.SMTP.Host,
+		Port:                   cfg.SMTP.Port,
+		AuthEnabled:            cfg.SMTP.AuthEnabled,
+		Username:               cfg.SMTP.Username,
+		Password:               cfg.SMTP.Password,
+		From:                   cfg.SMTP.From,
+		BaseURL:                cfg.PasswordReset.BaseURL,
+		ResetTTL:               cfg.PasswordReset.TTL,
+		FallbackTimeoutSeconds: cfg.SMTP.FallbackTimeoutSeconds,
+		SkipTLSVerify:          cfg.SMTP.SkipTLSVerify,
+	})
+
 	resolver := common.NewPermissionResolver(userRoleRepo, rolePermRepo, roleRepo, permRepo)
 
 	authService := auth.NewAuthService(userRepo, sessionRepo, hasher, tokenProvider, tokenHasher, txManager, clockImpl, uuidGen, resolver, cfg.Cookie.TTL)
@@ -77,7 +93,13 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 
 	permissionService := permission.NewPermissionService(permRepo, rolePermRepo, uuidGen, txManager)
 
-	ctrl := controller.NewAuthServiceController(authService, userService, accessService, roleService, permissionService, cfg.Cookie, logger)
+	passwordResetService := passwordreset.NewPasswordResetService(
+		userRepo, resetRepo, sessionRepo, hasher, tokenProvider, tokenHasher, mailer, clockImpl, uuidGen, txManager, cfg.PasswordReset.TTL,
+	)
+
+	ctrl := controller.NewAuthServiceController(
+		authService, userService, accessService, roleService, permissionService, passwordResetService, cfg.Cookie, logger,
+	)
 
 	ctx := context.Background()
 	gwMux, err := httpinfra.NewGatewayMux(ctx, ctrl)

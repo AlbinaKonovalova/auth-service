@@ -115,6 +115,34 @@ service AuthService {
     };
   }
 
+  // RequestPasswordReset initiates a password reset flow.
+  // Always returns success regardless of whether the email exists (no user enumeration).
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/password-reset/request"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request password reset"
+      description: "Initiates password reset flow. Sends a reset link to the provided email if the account exists. Always returns success to prevent user enumeration"
+      tags: ["auth"]
+    };
+  }
+
+  // ConfirmPasswordReset completes the password reset flow.
+  // Validates the reset token, updates the password and revokes all refresh sessions.
+  rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (ConfirmPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/password-reset/confirm"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Confirm password reset"
+      description: "Validates the reset token and sets a new password. Revokes all existing refresh sessions. Fails if the token is invalid, expired or already used"
+      tags: ["auth"]
+    };
+  }
+
   // Healthz returns service health status.
   rpc Healthz(HealthzRequest) returns (HealthzResponse) {
     option (google.api.http) = {
@@ -706,5 +734,24 @@ message DeletePermissionRequest {
 }
 
 message DeletePermissionResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Password Reset
+
+message RequestPasswordResetRequest {
+  string email = 1 [json_name = "email"];
+}
+
+message RequestPasswordResetResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+message ConfirmPasswordResetRequest {
+  string token = 1 [json_name = "token"];
+  string new_password = 2 [json_name = "new_password"];
+}
+
+message ConfirmPasswordResetResponse {
   bool success = 1 [json_name = "success"];
 }

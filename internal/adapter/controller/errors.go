@@ -46,13 +46,33 @@ func (c *AuthServiceController) domainErrToStatus(err error) error {
 		errors.Is(err, domain.ErrInvalidPermissionCode),
 		errors.Is(err, domain.ErrPermissionDescriptionEmpty),
 		errors.Is(err, domain.ErrUserMustHaveRole),
-		errors.Is(err, domain.ErrCannotRevokeLastRole):
+		errors.Is(err, domain.ErrCannotRevokeLastRole),
+		// refresh session constructor errors
+		errors.Is(err, domain.ErrInvalidRefreshSessionID),
+		errors.Is(err, domain.ErrInvalidRefreshTokenHash),
+		errors.Is(err, domain.ErrInvalidRefreshTokenTTL),
+		errors.Is(err, domain.ErrInvalidRefreshSessionTime),
+		// reset token constructor errors
+		errors.Is(err, domain.ErrInvalidResetTokenID),
+		errors.Is(err, domain.ErrInvalidResetTokenUserID),
+		errors.Is(err, domain.ErrInvalidResetTokenHash),
+		errors.Is(err, domain.ErrInvalidResetTokenNow),
+		errors.Is(err, domain.ErrInvalidResetTokenTTL):
 		return status.Error(codes.InvalidArgument, err.Error())
 
 	case errors.Is(err, domain.ErrRefreshTokenNotFound),
 		errors.Is(err, domain.ErrRefreshTokenRevoked),
 		errors.Is(err, domain.ErrRefreshTokenExpired):
 		return status.Error(codes.Unauthenticated, err.Error())
+
+	case errors.Is(err, domain.ErrResetTokenNotFound):
+		return status.Error(codes.NotFound, err.Error())
+
+	case errors.Is(err, domain.ErrResetTokenExpired):
+		return status.Error(codes.FailedPrecondition, err.Error())
+
+	case errors.Is(err, domain.ErrResetTokenUsed):
+		return status.Error(codes.FailedPrecondition, err.Error())
 
 	case errors.Is(err, domain.ErrDataIntegrityViolation):
 		c.logger.Error("data integrity violation", "error", err)

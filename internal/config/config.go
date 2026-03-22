@@ -10,13 +10,15 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	Log      LogConfig      `yaml:"log"`
-	Cookie   CookieConfig   `yaml:"cookie"`
-	Auth     AuthConfig     `yaml:"auth"`
-	Argon2   Argon2Config   `yaml:"argon2"`
-	CORS     CORSConfig     `yaml:"cors"`
+	Server        ServerConfig        `yaml:"server"`
+	Database      DatabaseConfig      `yaml:"database"`
+	Log           LogConfig           `yaml:"log"`
+	Cookie        CookieConfig        `yaml:"cookie"`
+	Auth          AuthConfig          `yaml:"auth"`
+	Argon2        Argon2Config        `yaml:"argon2"`
+	CORS          CORSConfig          `yaml:"cors"`
+	SMTP          SMTPConfig          `yaml:"smtp"`
+	PasswordReset PasswordResetConfig `yaml:"password_reset"`
 }
 
 type ServerConfig struct {
@@ -192,6 +194,25 @@ func (c *Config) setDefaults() {
 	if c.Argon2.KeyLength == 0 {
 		c.Argon2.KeyLength = darg.KeyLength
 	}
+
+	dsmtp := defaultSMTPConfig()
+	if c.SMTP.Host == "" {
+		c.SMTP.Host = dsmtp.Host
+	}
+	if c.SMTP.Port == 0 {
+		c.SMTP.Port = dsmtp.Port
+	}
+	if c.SMTP.FallbackTimeoutSeconds == 0 {
+		c.SMTP.FallbackTimeoutSeconds = dsmtp.FallbackTimeoutSeconds
+	}
+
+	dpr := defaultPasswordResetConfig()
+	if c.PasswordReset.TTL == 0 {
+		c.PasswordReset.TTL = dpr.TTL
+	}
+	if c.PasswordReset.BaseURL == "" {
+		c.PasswordReset.BaseURL = dpr.BaseURL
+	}
 }
 
 func (c *Config) validate() error {
@@ -203,6 +224,33 @@ func (c *Config) validate() error {
 	}
 	if c.Auth.JWTSecret == "" {
 		return fmt.Errorf("auth.jwt_secret is required")
+	}
+	if c.SMTP.From == "" {
+		return fmt.Errorf("smtp.from is required")
+	}
+	if c.SMTP.Host == "" {
+		return fmt.Errorf("smtp.host is required")
+	}
+	if c.SMTP.Port <= 0 {
+		return fmt.Errorf("smtp.port must be greater than 0")
+	}
+	if c.SMTP.FallbackTimeoutSeconds <= 0 {
+		return fmt.Errorf("smtp.fallback_timeout_seconds must be greater than 0")
+	}
+	if c.SMTP.AuthEnabled {
+		if c.SMTP.Username == "" || c.SMTP.Password == "" {
+			return fmt.Errorf("smtp.username and smtp.password are required when smtp.auth_enabled=true")
+		}
+	} else {
+		if c.SMTP.Username != "" || c.SMTP.Password != "" {
+			return fmt.Errorf("smtp.username and smtp.password must be empty when smtp.auth_enabled=false")
+		}
+	}
+	if c.PasswordReset.TTL <= 0 {
+		return fmt.Errorf("password_reset.ttl must be greater than 0")
+	}
+	if c.PasswordReset.BaseURL == "" {
+		return fmt.Errorf("password_reset.base_url is required")
 	}
 	return nil
 }

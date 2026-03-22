@@ -184,6 +184,27 @@ func (r *UserRepository) List(ctx context.Context, f dto.UserListFilters) ([]ent
 	return users, total, nil
 }
 
+func (r *UserRepository) UpdatePasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `UPDATE users SET password_hash = $2 WHERE id = $1`
+
+	res, err := q.ExecContext(ctx, query, id, passwordHash)
+	if err != nil {
+		return fmt.Errorf("update password hash: %w", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("update password hash rows affected: %w", err)
+	}
+	if n == 0 {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
+}
+
 func (r *UserRepository) Activate(ctx context.Context, id uuid.UUID) error {
 	q := ExtractTx(ctx, r.db)
 

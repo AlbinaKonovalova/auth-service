@@ -19,28 +19,30 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName              = "/authservice.v1.AuthService/Login"
-	AuthService_Refresh_FullMethodName            = "/authservice.v1.AuthService/Refresh"
-	AuthService_Logout_FullMethodName             = "/authservice.v1.AuthService/Logout"
-	AuthService_Me_FullMethodName                 = "/authservice.v1.AuthService/Me"
-	AuthService_Healthz_FullMethodName            = "/authservice.v1.AuthService/Healthz"
-	AuthService_CreateUser_FullMethodName         = "/authservice.v1.AuthService/CreateUser"
-	AuthService_ListUsers_FullMethodName          = "/authservice.v1.AuthService/ListUsers"
-	AuthService_GetUser_FullMethodName            = "/authservice.v1.AuthService/GetUser"
-	AuthService_ActivateUser_FullMethodName       = "/authservice.v1.AuthService/ActivateUser"
-	AuthService_DeactivateUser_FullMethodName     = "/authservice.v1.AuthService/DeactivateUser"
-	AuthService_GetUserRoles_FullMethodName       = "/authservice.v1.AuthService/GetUserRoles"
-	AuthService_ListRoles_FullMethodName          = "/authservice.v1.AuthService/ListRoles"
-	AuthService_CreateRole_FullMethodName         = "/authservice.v1.AuthService/CreateRole"
-	AuthService_DeleteRole_FullMethodName         = "/authservice.v1.AuthService/DeleteRole"
-	AuthService_AssignRole_FullMethodName         = "/authservice.v1.AuthService/AssignRole"
-	AuthService_RevokeRole_FullMethodName         = "/authservice.v1.AuthService/RevokeRole"
-	AuthService_ListPermissions_FullMethodName    = "/authservice.v1.AuthService/ListPermissions"
-	AuthService_GetRolePermissions_FullMethodName = "/authservice.v1.AuthService/GetRolePermissions"
-	AuthService_AssignPermission_FullMethodName   = "/authservice.v1.AuthService/AssignPermission"
-	AuthService_CreatePermission_FullMethodName   = "/authservice.v1.AuthService/CreatePermission"
-	AuthService_DeletePermission_FullMethodName   = "/authservice.v1.AuthService/DeletePermission"
-	AuthService_RevokePermission_FullMethodName   = "/authservice.v1.AuthService/RevokePermission"
+	AuthService_Login_FullMethodName                = "/authservice.v1.AuthService/Login"
+	AuthService_Refresh_FullMethodName              = "/authservice.v1.AuthService/Refresh"
+	AuthService_Logout_FullMethodName               = "/authservice.v1.AuthService/Logout"
+	AuthService_Me_FullMethodName                   = "/authservice.v1.AuthService/Me"
+	AuthService_RequestPasswordReset_FullMethodName = "/authservice.v1.AuthService/RequestPasswordReset"
+	AuthService_ConfirmPasswordReset_FullMethodName = "/authservice.v1.AuthService/ConfirmPasswordReset"
+	AuthService_Healthz_FullMethodName              = "/authservice.v1.AuthService/Healthz"
+	AuthService_CreateUser_FullMethodName           = "/authservice.v1.AuthService/CreateUser"
+	AuthService_ListUsers_FullMethodName            = "/authservice.v1.AuthService/ListUsers"
+	AuthService_GetUser_FullMethodName              = "/authservice.v1.AuthService/GetUser"
+	AuthService_ActivateUser_FullMethodName         = "/authservice.v1.AuthService/ActivateUser"
+	AuthService_DeactivateUser_FullMethodName       = "/authservice.v1.AuthService/DeactivateUser"
+	AuthService_GetUserRoles_FullMethodName         = "/authservice.v1.AuthService/GetUserRoles"
+	AuthService_ListRoles_FullMethodName            = "/authservice.v1.AuthService/ListRoles"
+	AuthService_CreateRole_FullMethodName           = "/authservice.v1.AuthService/CreateRole"
+	AuthService_DeleteRole_FullMethodName           = "/authservice.v1.AuthService/DeleteRole"
+	AuthService_AssignRole_FullMethodName           = "/authservice.v1.AuthService/AssignRole"
+	AuthService_RevokeRole_FullMethodName           = "/authservice.v1.AuthService/RevokeRole"
+	AuthService_ListPermissions_FullMethodName      = "/authservice.v1.AuthService/ListPermissions"
+	AuthService_GetRolePermissions_FullMethodName   = "/authservice.v1.AuthService/GetRolePermissions"
+	AuthService_AssignPermission_FullMethodName     = "/authservice.v1.AuthService/AssignPermission"
+	AuthService_CreatePermission_FullMethodName     = "/authservice.v1.AuthService/CreatePermission"
+	AuthService_DeletePermission_FullMethodName     = "/authservice.v1.AuthService/DeletePermission"
+	AuthService_RevokePermission_FullMethodName     = "/authservice.v1.AuthService/RevokePermission"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -60,6 +62,12 @@ type AuthServiceClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	// Me returns the current authenticated user.
 	Me(ctx context.Context, in *MeRequest, opts ...grpc.CallOption) (*MeResponse, error)
+	// RequestPasswordReset initiates a password reset flow.
+	// Always returns success regardless of whether the email exists (no user enumeration).
+	RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error)
+	// ConfirmPasswordReset completes the password reset flow.
+	// Validates the reset token, updates the password and revokes all refresh sessions.
+	ConfirmPasswordReset(ctx context.Context, in *ConfirmPasswordResetRequest, opts ...grpc.CallOption) (*ConfirmPasswordResetResponse, error)
 	// Healthz returns service health status.
 	Healthz(ctx context.Context, in *HealthzRequest, opts ...grpc.CallOption) (*HealthzResponse, error)
 	// CreateUser creates a new user (admin API).
@@ -140,6 +148,26 @@ func (c *authServiceClient) Me(ctx context.Context, in *MeRequest, opts ...grpc.
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MeResponse)
 	err := c.cc.Invoke(ctx, AuthService_Me_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestPasswordResetResponse)
+	err := c.cc.Invoke(ctx, AuthService_RequestPasswordReset_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) ConfirmPasswordReset(ctx context.Context, in *ConfirmPasswordResetRequest, opts ...grpc.CallOption) (*ConfirmPasswordResetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConfirmPasswordResetResponse)
+	err := c.cc.Invoke(ctx, AuthService_ConfirmPasswordReset_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,6 +371,12 @@ type AuthServiceServer interface {
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	// Me returns the current authenticated user.
 	Me(context.Context, *MeRequest) (*MeResponse, error)
+	// RequestPasswordReset initiates a password reset flow.
+	// Always returns success regardless of whether the email exists (no user enumeration).
+	RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error)
+	// ConfirmPasswordReset completes the password reset flow.
+	// Validates the reset token, updates the password and revokes all refresh sessions.
+	ConfirmPasswordReset(context.Context, *ConfirmPasswordResetRequest) (*ConfirmPasswordResetResponse, error)
 	// Healthz returns service health status.
 	Healthz(context.Context, *HealthzRequest) (*HealthzResponse, error)
 	// CreateUser creates a new user (admin API).
@@ -400,6 +434,12 @@ func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*
 }
 func (UnimplementedAuthServiceServer) Me(context.Context, *MeRequest) (*MeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Me not implemented")
+}
+func (UnimplementedAuthServiceServer) RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestPasswordReset not implemented")
+}
+func (UnimplementedAuthServiceServer) ConfirmPasswordReset(context.Context, *ConfirmPasswordResetRequest) (*ConfirmPasswordResetResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ConfirmPasswordReset not implemented")
 }
 func (UnimplementedAuthServiceServer) Healthz(context.Context, *HealthzRequest) (*HealthzResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Healthz not implemented")
@@ -544,6 +584,42 @@ func _AuthService_Me_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).Me(ctx, req.(*MeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_RequestPasswordReset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestPasswordResetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RequestPasswordReset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RequestPasswordReset_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RequestPasswordReset(ctx, req.(*RequestPasswordResetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_ConfirmPasswordReset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmPasswordResetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ConfirmPasswordReset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_ConfirmPasswordReset_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ConfirmPasswordReset(ctx, req.(*ConfirmPasswordResetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -894,6 +970,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Me",
 			Handler:    _AuthService_Me_Handler,
+		},
+		{
+			MethodName: "RequestPasswordReset",
+			Handler:    _AuthService_RequestPasswordReset_Handler,
+		},
+		{
+			MethodName: "ConfirmPasswordReset",
+			Handler:    _AuthService_ConfirmPasswordReset_Handler,
 		},
 		{
 			MethodName: "Healthz",
