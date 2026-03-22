@@ -23,4 +23,10 @@ type PermissionUseCase interface {
 	// Возвращает domain.ErrPermissionDescriptionEmpty если description пустой после trim.
 	// Возвращает domain.ErrDuplicatePermissionCode если permission с таким code уже существует.
 	CreatePermission(ctx context.Context, in CreatePermissionInput) (domainservice.PermissionView, error)
+
+	// DeletePermission удаляет permission по code.
+	// Возвращает domain.ErrInvalidPermissionCode если code невалиден.
+	// Возвращает domain.ErrPermissionNotFound если permission не существует.
+	// Возвращает domain.ErrPermissionInUse если permission назначен хотя бы одной роли.
+	DeletePermission(ctx context.Context, permissionCode string) error
 }

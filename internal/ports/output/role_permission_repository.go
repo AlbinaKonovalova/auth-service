@@ -14,5 +14,8 @@ type RolePermissionRepository interface {
 	Assign(ctx context.Context, rp entity.RolePermission) error
 	Exists(ctx context.Context, roleID, permissionID uuid.UUID) (bool, error)
 	ExistsByRoleID(ctx context.Context, roleID uuid.UUID) (bool, error)
+	// ExistsByPermissionID возвращает true если permission назначен хотя бы одной роли.
+	// Используется в delete permission сценарии для проверки связей перед удалением.
+	ExistsByPermissionID(ctx context.Context, permissionID uuid.UUID) (bool, error)
 	Revoke(ctx context.Context, roleID, permissionID uuid.UUID) error
 }

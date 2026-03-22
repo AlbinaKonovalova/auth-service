@@ -93,6 +93,30 @@ func (r *PermissionRepository) FindByCode(ctx context.Context, code string) (*en
 	return &p, nil
 }
 
+// FindByCodeForUpdate читает permission с блокировкой строки (SELECT ... FOR UPDATE).
+// Используется в delete-сценарии внутри транзакции — сериализует конкурентные delete
+// и фиксирует состояние permission на время read-check-delete.
+func (r *PermissionRepository) FindByCodeForUpdate(ctx context.Context, code string) (*entity.Permission, error) {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `
+		SELECT id, code, description
+		FROM permissions
+		WHERE code = $1
+		FOR UPDATE`
+
+	var p entity.Permission
+	err := q.QueryRowContext(ctx, query, code).Scan(&p.ID, &p.Code, &p.Description)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrPermissionNotFound
+		}
+		return nil, fmt.Errorf("find permission by code for update: %w", err)
+	}
+
+	return &p, nil
+}
+
 func (r *PermissionRepository) FindAll(ctx context.Context) ([]entity.Permission, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -142,6 +166,27 @@ func (r *PermissionRepository) Create(ctx context.Context, p entity.Permission) 
 			return domain.ErrDuplicatePermissionCode
 		}
 		return fmt.Errorf("create permission: %w", err)
+	}
+
+	return nil
+}
+
+func (r *PermissionRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	q := ExtractTx(ctx, r.db)
+
+	const query = `DELETE FROM permissions WHERE id = $1`
+
+	result, err := q.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete permission: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete permission: rows affected: %w", err)
+	}
+	if affected == 0 {
+		return domain.ErrPermissionNotFound
 	}
 
 	return nil

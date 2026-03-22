@@ -75,7 +75,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 
 	roleService := role.NewRoleService(roleRepo, userRoleRepo, rolePermRepo, uuidGen, txManager)
 
-	permissionService := permission.NewPermissionService(permRepo, uuidGen, txManager)
+	permissionService := permission.NewPermissionService(permRepo, rolePermRepo, uuidGen, txManager)
 
 	ctrl := controller.NewAuthServiceController(authService, userService, accessService, roleService, permissionService, cfg.Cookie, logger)
 

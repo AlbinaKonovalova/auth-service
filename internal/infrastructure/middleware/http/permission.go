@@ -94,6 +94,10 @@ func requiredAdminPermission(method, path string) (string, bool) {
 	case method == http.MethodPost && path == "/api/v1/admin/permissions":
 		return "users.write", true
 
+	// DELETE /api/v1/admin/permissions/{permission_code}
+	case method == http.MethodDelete && isAdminPermissionByCode(path):
+		return "users.write", true
+
 	default:
 		// Unknown admin routes are denied by default.
 		// Add an explicit case above when a new admin route is introduced.
@@ -232,4 +236,16 @@ func isAdminRolePermissionRevokePath(path string) bool {
 	permCode := rest[len("permissions/"):]
 
 	return permCode != "" && !strings.Contains(permCode, "/")
+}
+
+// isAdminPermissionByCode возвращает true если path точно соответствует
+// /api/v1/admin/permissions/{permission_code}:
+// непустой permission_code, без вложенных сегментов.
+func isAdminPermissionByCode(path string) bool {
+	const prefix = "/api/v1/admin/permissions/"
+	if !strings.HasPrefix(path, prefix) {
+		return false
+	}
+	rest := path[len(prefix):]
+	return rest != "" && !strings.Contains(rest, "/")
 }

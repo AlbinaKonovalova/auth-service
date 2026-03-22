@@ -401,6 +401,24 @@ service AuthService {
     };
   }
 
+  // DeletePermission deletes a permission by code (admin API).
+  rpc DeletePermission(DeletePermissionRequest) returns (DeletePermissionResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/permissions/{permission_code}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete permission"
+      description: "Delete a permission by code. Fails if the permission is assigned to any role"
+      tags: ["permissions"]
+      security: {
+        security_requirement: {
+          key: "Bearer"
+          value: {}
+        }
+      }
+    };
+  }
+
   // RevokePermission revokes a permission from a role (admin API).
   rpc RevokePermission(RevokePermissionRequest) returns (RevokePermissionResponse) {
     option (google.api.http) = {
@@ -678,5 +696,15 @@ message DeleteRoleRequest {
 }
 
 message DeleteRoleResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+// Admin — Delete Permission
+
+message DeletePermissionRequest {
+  string permission_code = 1 [json_name = "permission_code"];
+}
+
+message DeletePermissionResponse {
   bool success = 1 [json_name = "success"];
 }

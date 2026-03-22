@@ -104,6 +104,43 @@
         ]
       }
     },
+    "/api/v1/admin/permissions/{permission_code}": {
+      "delete": {
+        "summary": "Delete permission",
+        "description": "Delete a permission by code. Fails if the permission is assigned to any role",
+        "operationId": "AuthService_DeletePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "permission_code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "permissions"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/roles": {
       "get": {
         "summary": "List roles",
@@ -969,6 +1006,14 @@
       }
     },
     "v1DeactivateUserResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeletePermissionResponse": {
       "type": "object",
       "properties": {
         "success": {

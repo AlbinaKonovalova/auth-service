@@ -39,6 +39,7 @@ const (
 	AuthService_GetRolePermissions_FullMethodName = "/authservice.v1.AuthService/GetRolePermissions"
 	AuthService_AssignPermission_FullMethodName   = "/authservice.v1.AuthService/AssignPermission"
 	AuthService_CreatePermission_FullMethodName   = "/authservice.v1.AuthService/CreatePermission"
+	AuthService_DeletePermission_FullMethodName   = "/authservice.v1.AuthService/DeletePermission"
 	AuthService_RevokePermission_FullMethodName   = "/authservice.v1.AuthService/RevokePermission"
 )
 
@@ -91,6 +92,8 @@ type AuthServiceClient interface {
 	AssignPermission(ctx context.Context, in *AssignPermissionRequest, opts ...grpc.CallOption) (*AssignPermissionResponse, error)
 	// CreatePermission creates a new permission (admin API).
 	CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*PermissionInfo, error)
+	// DeletePermission deletes a permission by code (admin API).
+	DeletePermission(ctx context.Context, in *DeletePermissionRequest, opts ...grpc.CallOption) (*DeletePermissionResponse, error)
 	// RevokePermission revokes a permission from a role (admin API).
 	RevokePermission(ctx context.Context, in *RevokePermissionRequest, opts ...grpc.CallOption) (*RevokePermissionResponse, error)
 }
@@ -303,6 +306,16 @@ func (c *authServiceClient) CreatePermission(ctx context.Context, in *CreatePerm
 	return out, nil
 }
 
+func (c *authServiceClient) DeletePermission(ctx context.Context, in *DeletePermissionRequest, opts ...grpc.CallOption) (*DeletePermissionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePermissionResponse)
+	err := c.cc.Invoke(ctx, AuthService_DeletePermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) RevokePermission(ctx context.Context, in *RevokePermissionRequest, opts ...grpc.CallOption) (*RevokePermissionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RevokePermissionResponse)
@@ -362,6 +375,8 @@ type AuthServiceServer interface {
 	AssignPermission(context.Context, *AssignPermissionRequest) (*AssignPermissionResponse, error)
 	// CreatePermission creates a new permission (admin API).
 	CreatePermission(context.Context, *CreatePermissionRequest) (*PermissionInfo, error)
+	// DeletePermission deletes a permission by code (admin API).
+	DeletePermission(context.Context, *DeletePermissionRequest) (*DeletePermissionResponse, error)
 	// RevokePermission revokes a permission from a role (admin API).
 	RevokePermission(context.Context, *RevokePermissionRequest) (*RevokePermissionResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
@@ -433,6 +448,9 @@ func (UnimplementedAuthServiceServer) AssignPermission(context.Context, *AssignP
 }
 func (UnimplementedAuthServiceServer) CreatePermission(context.Context, *CreatePermissionRequest) (*PermissionInfo, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePermission not implemented")
+}
+func (UnimplementedAuthServiceServer) DeletePermission(context.Context, *DeletePermissionRequest) (*DeletePermissionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePermission not implemented")
 }
 func (UnimplementedAuthServiceServer) RevokePermission(context.Context, *RevokePermissionRequest) (*RevokePermissionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokePermission not implemented")
@@ -818,6 +836,24 @@ func _AuthService_CreatePermission_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_DeletePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeletePermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_DeletePermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeletePermission(ctx, req.(*DeletePermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_RevokePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RevokePermissionRequest)
 	if err := dec(in); err != nil {
@@ -922,6 +958,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePermission",
 			Handler:    _AuthService_CreatePermission_Handler,
+		},
+		{
+			MethodName: "DeletePermission",
+			Handler:    _AuthService_DeletePermission_Handler,
 		},
 		{
 			MethodName: "RevokePermission",
