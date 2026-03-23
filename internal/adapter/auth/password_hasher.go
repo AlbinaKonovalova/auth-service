@@ -9,9 +9,12 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/argon2"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
-type Argon2Params struct {
+// decodedArgon2Params используется только при декодировании хеша из БД.
+type decodedArgon2Params struct {
 	Memory      uint32
 	Iterations  uint32
 	Parallelism uint8
@@ -20,15 +23,15 @@ type Argon2Params struct {
 }
 
 type PasswordHasher struct {
-	params Argon2Params
+	cfg modules.Argon2Config
 }
 
-func NewPasswordHasher(params Argon2Params) *PasswordHasher {
-	return &PasswordHasher{params: params}
+func NewPasswordHasher(cfg modules.Argon2Config) *PasswordHasher {
+	return &PasswordHasher{cfg: cfg}
 }
 
 func (h *PasswordHasher) Hash(password string) (string, error) {
-	salt := make([]byte, h.params.SaltLength)
+	salt := make([]byte, h.cfg.SaltLength)
 	if _, err := rand.Read(salt); err != nil {
 		return "", fmt.Errorf("generate salt: %w", err)
 	}
@@ -36,18 +39,18 @@ func (h *PasswordHasher) Hash(password string) (string, error) {
 	hash := argon2.IDKey(
 		[]byte(password),
 		salt,
-		h.params.Iterations,
-		h.params.Memory,
-		h.params.Parallelism,
-		h.params.KeyLength,
+		h.cfg.Iterations,
+		h.cfg.Memory,
+		h.cfg.Parallelism,
+		h.cfg.KeyLength,
 	)
 
 	encoded := fmt.Sprintf(
 		"$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
 		argon2.Version,
-		h.params.Memory,
-		h.params.Iterations,
-		h.params.Parallelism,
+		h.cfg.Memory,
+		h.cfg.Iterations,
+		h.cfg.Parallelism,
 		base64.RawStdEncoding.EncodeToString(salt),
 		base64.RawStdEncoding.EncodeToString(hash),
 	)
@@ -77,33 +80,33 @@ func (h *PasswordHasher) Verify(password, encoded string) (bool, error) {
 	return true, nil
 }
 
-func decodeHash(encoded string) (Argon2Params, []byte, []byte, error) {
+func decodeHash(encoded string) (decodedArgon2Params, []byte, []byte, error) {
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 6 {
-		return Argon2Params{}, nil, nil, errors.New("invalid hash format")
+		return decodedArgon2Params{}, nil, nil, errors.New("invalid hash format")
 	}
 
 	var version int
 	if _, err := fmt.Sscanf(parts[2], "v=%d", &version); err != nil {
-		return Argon2Params{}, nil, nil, errors.New("invalid hash version")
+		return decodedArgon2Params{}, nil, nil, errors.New("invalid hash version")
 	}
 	if version != argon2.Version {
-		return Argon2Params{}, nil, nil, errors.New("incompatible argon2 version")
+		return decodedArgon2Params{}, nil, nil, errors.New("incompatible argon2 version")
 	}
 
-	var params Argon2Params
+	var params decodedArgon2Params
 	if _, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &params.Memory, &params.Iterations, &params.Parallelism); err != nil {
-		return Argon2Params{}, nil, nil, errors.New("invalid hash params")
+		return decodedArgon2Params{}, nil, nil, errors.New("invalid hash params")
 	}
 
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
 	if err != nil {
-		return Argon2Params{}, nil, nil, errors.New("invalid hash salt")
+		return decodedArgon2Params{}, nil, nil, errors.New("invalid hash salt")
 	}
 
 	hash, err := base64.RawStdEncoding.DecodeString(parts[5])
 	if err != nil {
-		return Argon2Params{}, nil, nil, errors.New("invalid hash key")
+		return decodedArgon2Params{}, nil, nil, errors.New("invalid hash key")
 	}
 
 	params.KeyLength = uint32(len(hash))

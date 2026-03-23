@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # migrate накатывает миграции из migrations/ через goose.
+  # Запускается автоматически при docker compose up.
+  # auth-service стартует только после успешного завершения migrate.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["./goose"]
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: "host=postgres port=5432 user=postgres password=postgres dbname=auth_db sslmode=disable"
+    volumes:
+      - ./migrations:/migrations
+    command: ["-dir", "/migrations", "up"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      # Конфиг для контейнерного запуска: database url использует service name postgres.
+      - ./config/config.docker.yaml:/app/config/config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # seed — одноразовый job для создания initial admin.
+  # Запускается вручную: docker compose run --rm seed
+  # Или через make: make docker-seed ADMIN_EMAIL=... ADMIN_PASSWORD=...
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["./seed", "-config", "/app/config/config.yaml"]
+    volumes:
+      - ./config/config.docker.yaml:/app/config/config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:

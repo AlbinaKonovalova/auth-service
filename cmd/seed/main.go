@@ -17,14 +17,14 @@ import (
 
 func main() {
 	configPath := flag.String("config", "config/config.yaml", "path to config file")
-	email := flag.String("email", "", "admin email (required)")
+	email := flag.String("email", "admin@example.com", "admin email (default: admin@example.com)")
 	password := flag.String("password", "", "admin password (required)")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	if *email == "" || *password == "" {
-		logger.Error("email and password are required")
+	if *password == "" {
+		logger.Error("password is required")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -47,13 +47,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	hasher := authadapter.NewPasswordHasher(authadapter.Argon2Params{
-		Memory:      cfg.Argon2.Memory,
-		Iterations:  cfg.Argon2.Iterations,
-		Parallelism: cfg.Argon2.Parallelism,
-		SaltLength:  cfg.Argon2.SaltLength,
-		KeyLength:   cfg.Argon2.KeyLength,
-	})
+	hasher := authadapter.NewPasswordHasher(cfg.Argon2)
 
 	ctx := context.Background()
 

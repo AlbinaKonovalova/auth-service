@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/AlbinaKonovalova/auth-service/internal/config"
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 	pb "github.com/AlbinaKonovalova/auth-service/pkg/authservice/v1"
 )
@@ -17,7 +17,7 @@ type AuthServiceController struct {
 	role          input.RoleUseCase
 	permission    input.PermissionUseCase
 	passwordReset input.PasswordResetUseCase
-	cookie        config.CookieConfig
+	cookie        modules.CookieConfig
 	logger        *slog.Logger
 }
 
@@ -28,7 +28,7 @@ func NewAuthServiceController(
 	role input.RoleUseCase,
 	permission input.PermissionUseCase,
 	passwordReset input.PasswordResetUseCase,
-	cookie config.CookieConfig,
+	cookie modules.CookieConfig,
 	logger *slog.Logger,
 ) *AuthServiceController {
 	return &AuthServiceController{

@@ -1,4 +1,4 @@
-.PHONY: build run seed migrate-up migrate-down migrate-create lint test clean deps proto-gen install-proto-tools pb-deps
+.PHONY: build run seed migrate-up migrate-down migrate-create lint test clean deps proto-gen install-proto-tools pb-deps docker-start docker-up docker-down docker-down-volumes docker-seed docker-logs
 
 # Переменные
 BINARY_NAME=auth-service
@@ -52,11 +52,12 @@ build:
 	go build -o bin/$(BINARY_NAME) ./cmd/auth-service
 
 # Seed initial admin user (идемпотентно)
-# Использование: make seed ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=secret
+# Использование: make seed ADMIN_PASSWORD=secret [ADMIN_EMAIL=admin@example.com]
 ADMIN_EMAIL?=admin@example.com
 ADMIN_PASSWORD?=
 
 seed:
+	@test -n "$(ADMIN_PASSWORD)" || (echo "ERROR: ADMIN_PASSWORD is required. Usage: make seed ADMIN_PASSWORD=secret [ADMIN_EMAIL=admin@example.com]" && exit 1)
 	go run ./cmd/seed \
 		-config config/config.yaml \
 		-email $(ADMIN_EMAIL) \
@@ -79,12 +80,45 @@ clean:
 	rm -rf bin/
 	rm -f coverage.out coverage.html
 
-# Docker
-docker-build:
-	docker build -t adminshelf-api .
+# Docker Compose
+# Первый запуск (build + migrate + seed):  make docker-start ADMIN_PASSWORD=secret
+# Повторный запуск уже собранного:         make docker-up
+# Остановка:                               make docker-down
+# Остановка + удаление volumes:            make docker-down-volumes
 
-docker-run:
-	docker-compose up -d --build
+# Полный запуск сервиса одной командой:
+#   make docker-start ADMIN_PASSWORD=secret [ADMIN_EMAIL=admin@example.com]
+# Порядок: build -> postgres -> migrate -> auth-service -> seed
+docker-start:
+	@test -n "$(ADMIN_PASSWORD)" || (echo "ERROR: ADMIN_PASSWORD is required. Usage: make docker-start ADMIN_PASSWORD=secret [ADMIN_EMAIL=admin@example.com]" && exit 1)
+	docker compose up --build -d
+	@echo "Waiting for migrate to complete..."
+	@docker compose logs migrate 2>/dev/null; \
+	container_id=$$(docker compose ps -aq migrate 2>/dev/null | head -1); \
+	exit_code=$$(docker inspect --format='{{.State.ExitCode}}' "$$container_id" 2>/dev/null); \
+	if [ "$$exit_code" != "0" ]; then \
+		echo "ERROR: migrate failed (id=$$container_id, exit_code=$$exit_code)"; \
+		exit 1; \
+	fi
+	$(MAKE) docker-seed ADMIN_EMAIL="$(ADMIN_EMAIL)" ADMIN_PASSWORD="$(ADMIN_PASSWORD)"
+
+docker-up:
+	docker compose up -d
 
 docker-down:
-	docker-compose down
+	docker compose down
+
+docker-down-volumes:
+	docker compose down -v
+
+docker-migrate:
+	docker compose run --rm migrate
+
+docker-seed:
+	@test -n "$(ADMIN_PASSWORD)" || (echo "ERROR: ADMIN_PASSWORD is required. Usage: make docker-seed ADMIN_PASSWORD=secret [ADMIN_EMAIL=admin@example.com]" && exit 1)
+	docker compose run --rm seed \
+		-email $(ADMIN_EMAIL) \
+		-password $(ADMIN_PASSWORD)
+
+docker-logs:
+	docker compose logs -f auth-service

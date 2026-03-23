@@ -7,60 +7,29 @@ import (
 	"net"
 	"net/smtp"
 	"time"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
 // SMTPMailer реализует output.Mailer через SMTP.
 type SMTPMailer struct {
-	host                   string
-	port                   int
-	skipTLSVerify          bool
-	authEnabled            bool
-	username               string
-	password               string
-	from                   string
-	baseURL                string
-	resetTTL               time.Duration
-	fallbackTimeoutSeconds int
-}
-
-type SMTPConfig struct {
-	Host                   string
-	Port                   int
-	SkipTLSVerify          bool
-	AuthEnabled            bool
-	Username               string
-	Password               string
-	From                   string
-	BaseURL                string
-	ResetTTL               time.Duration
-	FallbackTimeoutSeconds int
+	smtp          modules.SMTPConfig
+	passwordReset modules.PasswordResetConfig
 }
 
 // NewSMTPMailer создаёт новый SMTP mailer.
-func NewSMTPMailer(cfg SMTPConfig) *SMTPMailer {
+func NewSMTPMailer(smtpCfg modules.SMTPConfig, passwordResetCfg modules.PasswordResetConfig) *SMTPMailer {
 	return &SMTPMailer{
-		host:                   cfg.Host,
-		port:                   cfg.Port,
-		skipTLSVerify:          cfg.SkipTLSVerify,
-		authEnabled:            cfg.AuthEnabled,
-		username:               cfg.Username,
-		password:               cfg.Password,
-		from:                   cfg.From,
-		baseURL:                cfg.BaseURL,
-		resetTTL:               cfg.ResetTTL,
-		fallbackTimeoutSeconds: cfg.FallbackTimeoutSeconds,
+		smtp:          smtpCfg,
+		passwordReset: passwordResetCfg,
 	}
 }
 
 // SendPasswordResetEmail отправляет письмо с ссылкой для сброса пароля.
 // resetToken — сырой (не захешированный) токен, который вставляется в ссылку.
-// ctx используется для отмены на этапе dial.
-// Для последующих SMTP-шагов на соединение выставляется deadline:
-// если у ctx есть deadline — используется он,
-// иначе применяется fallback timeout из конфига.
 func (m *SMTPMailer) SendPasswordResetEmail(ctx context.Context, toEmail string, resetToken string) error {
-	resetLink := fmt.Sprintf("%s?token=%s", m.baseURL, resetToken)
-	ttlMinutes := int(m.resetTTL.Minutes())
+	resetLink := fmt.Sprintf("%s?token=%s", m.passwordReset.BaseURL, resetToken)
+	ttlMinutes := int(m.passwordReset.TTL.Minutes())
 
 	subject := "Password Reset Request"
 	body := fmt.Sprintf(
@@ -70,7 +39,7 @@ func (m *SMTPMailer) SendPasswordResetEmail(ctx context.Context, toEmail string,
 	)
 	msg := fmt.Sprintf(
 		"From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
-		m.from, toEmail, subject, body,
+		m.smtp.From, toEmail, subject, body,
 	)
 
 	return m.send(ctx, toEmail, msg)
@@ -78,7 +47,7 @@ func (m *SMTPMailer) SendPasswordResetEmail(ctx context.Context, toEmail string,
 
 // send выполняет весь SMTP-диалог: dial → STARTTLS → AUTH → DATA → Quit.
 func (m *SMTPMailer) send(ctx context.Context, toEmail, msg string) error {
-	addr := fmt.Sprintf("%s:%d", m.host, m.port)
+	addr := fmt.Sprintf("%s:%d", m.smtp.Host, m.smtp.Port)
 
 	dialer := &net.Dialer{}
 	conn, err := dialer.DialContext(ctx, "tcp", addr)
@@ -86,7 +55,7 @@ func (m *SMTPMailer) send(ctx context.Context, toEmail, msg string) error {
 		return fmt.Errorf("smtp dial: %w", err)
 	}
 
-	fallback := time.Now().Add(time.Duration(m.fallbackTimeoutSeconds) * time.Second)
+	fallback := time.Now().Add(time.Duration(m.smtp.FallbackTimeoutSeconds) * time.Second)
 	deadline := fallback
 	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
 		deadline = d
@@ -96,15 +65,12 @@ func (m *SMTPMailer) send(ctx context.Context, toEmail, msg string) error {
 		return fmt.Errorf("smtp set deadline: %w", err)
 	}
 
-	client, err := smtp.NewClient(conn, m.host)
+	client, err := smtp.NewClient(conn, m.smtp.Host)
 	if err != nil {
-		// conn может остаться открытым если NewClient упал — закрываем явно
 		_ = conn.Close()
 		return fmt.Errorf("smtp new client: %w", err)
 	}
 
-	// Quit() уже закрывает соединение нормально.
-	// defer Close() нужен только как fallback при ошибке до Quit.
 	closed := false
 	defer func() {
 		if !closed {
@@ -112,27 +78,24 @@ func (m *SMTPMailer) send(ctx context.Context, toEmail, msg string) error {
 		}
 	}()
 
-	// STARTTLS — используется если сервер объявляет поддержку расширения.
-	// tls.Config с ServerName необходим для корректного TLS-handshake.
 	if ok, _ := client.Extension("STARTTLS"); ok {
 		tlsCfg := &tls.Config{
-			ServerName:         m.host,
-			InsecureSkipVerify: m.skipTLSVerify,
+			ServerName:         m.smtp.Host,
+			InsecureSkipVerify: m.smtp.SkipTLSVerify, //nolint:gosec
 		}
 		if err := client.StartTLS(tlsCfg); err != nil {
 			return fmt.Errorf("smtp starttls: %w", err)
 		}
 	}
 
-	// AUTH — только если явно включён в конфиге
-	if m.authEnabled {
-		auth := smtp.PlainAuth("", m.username, m.password, m.host)
+	if m.smtp.AuthEnabled {
+		auth := smtp.PlainAuth("", m.smtp.Username, m.smtp.Password, m.smtp.Host)
 		if err := client.Auth(auth); err != nil {
 			return fmt.Errorf("smtp auth: %w", err)
 		}
 	}
 
-	if err := client.Mail(m.from); err != nil {
+	if err := client.Mail(m.smtp.From); err != nil {
 		return fmt.Errorf("smtp mail from: %w", err)
 	}
 	if err := client.Rcpt(toEmail); err != nil {

@@ -7,16 +7,11 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
-type Config struct {
-	URL             string
-	MaxOpenConns    int
-	MaxIdleConns    int
-	ConnMaxLifetime time.Duration
-}
-
-func NewConnection(cfg Config) (*sql.DB, error) {
+func NewConnection(cfg modules.DatabaseConfig) (*sql.DB, error) {
 	db, err := sql.Open("postgres", cfg.URL)
 	if err != nil {
 		return nil, fmt.Errorf("open postgres connection: %w", err)

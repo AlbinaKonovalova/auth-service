@@ -4,8 +4,9 @@ server:
   write_timeout: 10s
   shutdown_timeout: 5s
 
+# В контейнерном запуске хост БД — service name из docker-compose, а не localhost.
 database:
-  url: postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable
+  url: postgres://postgres:postgres@postgres:5432/auth_db?sslmode=disable
   max_open_conns: 25
   max_idle_conns: 5
   conn_max_lifetime: 5m
@@ -42,12 +43,10 @@ cors:
 smtp:
   host: "127.0.0.1"
   port: 1025
-  auth_enabled: true
-  username: "harrys_uz@protonmail.com"
-  password: "ID14p721OKR7gelhwdQCZA"
-  from: "harrys_uz@protonmail.com"
+  auth_enabled: false
+  from: "no-reply@example.com"
   fallback_timeout_seconds: 15
-  skip_tls_verify: true
+  skip_tls_verify: false
 
 password_reset:
   ttl: 30m

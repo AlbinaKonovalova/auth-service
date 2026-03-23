@@ -11,6 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 )
 
@@ -21,17 +22,11 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-type TokenProviderConfig struct {
-	Secret            string
-	AccessTokenTTL    time.Duration
-	RefreshTokenBytes int
-}
-
 type TokenProvider struct {
-	cfg TokenProviderConfig
+	cfg modules.AuthConfig
 }
 
-func NewTokenProvider(cfg TokenProviderConfig) *TokenProvider {
+func NewTokenProvider(cfg modules.AuthConfig) *TokenProvider {
 	return &TokenProvider{cfg: cfg}
 }
 
@@ -51,7 +46,7 @@ func (p *TokenProvider) GenerateAccessToken(_ context.Context, claims value.Acce
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
-	signed, err := token.SignedString([]byte(p.cfg.Secret))
+	signed, err := token.SignedString([]byte(p.cfg.JWTSecret))
 	if err != nil {
 		return "", 0, fmt.Errorf("sign token: %w", err)
 	}
@@ -64,7 +59,7 @@ func (p *TokenProvider) ParseAccessToken(_ context.Context, tokenStr string) (va
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return []byte(p.cfg.Secret), nil
+		return []byte(p.cfg.JWTSecret), nil
 	})
 	if err != nil {
 		return value.AccessClaims{}, fmt.Errorf("parse token: %w", err)
