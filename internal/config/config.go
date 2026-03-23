@@ -3,43 +3,30 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"time"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
+// Config — единый конфиг приложения.
+// Каждое поле — отдельный модульный конфиг из internal/config/modules.
+// Внешний API не меняется: cfg.Server, cfg.Database, cfg.Auth и т.д.
 type Config struct {
-	Server        ServerConfig        `yaml:"server"`
-	Database      DatabaseConfig      `yaml:"database"`
-	Log           LogConfig           `yaml:"log"`
-	Cookie        CookieConfig        `yaml:"cookie"`
-	Auth          AuthConfig          `yaml:"auth"`
-	Argon2        Argon2Config        `yaml:"argon2"`
-	CORS          CORSConfig          `yaml:"cors"`
-	SMTP          SMTPConfig          `yaml:"smtp"`
-	PasswordReset PasswordResetConfig `yaml:"password_reset"`
+	Server        modules.ServerConfig        `yaml:"server"`
+	Database      modules.DatabaseConfig      `yaml:"database"`
+	Log           modules.LogConfig           `yaml:"log"`
+	Cookie        modules.CookieConfig        `yaml:"cookie"`
+	Auth          modules.AuthConfig          `yaml:"auth"`
+	Argon2        modules.Argon2Config        `yaml:"argon2"`
+	CORS          modules.CORSConfig          `yaml:"cors"`
+	SMTP          modules.SMTPConfig          `yaml:"smtp"`
+	PasswordReset modules.PasswordResetConfig `yaml:"password_reset"`
 }
 
-type ServerConfig struct {
-	Port            int           `yaml:"port"`
-	ReadTimeout     time.Duration `yaml:"read_timeout"`
-	WriteTimeout    time.Duration `yaml:"write_timeout"`
-	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
-}
-
-type DatabaseConfig struct {
-	URL             string        `yaml:"url"`
-	MaxOpenConns    int           `yaml:"max_open_conns"`
-	MaxIdleConns    int           `yaml:"max_idle_conns"`
-	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime"`
-}
-
-type LogConfig struct {
-	Level  string `yaml:"level"`
-	Format string `yaml:"format"`
-}
-
+// Load читает yaml-файл, проставляет defaults, валидирует и возвращает готовый конфиг.
+// Единственный источник конфигурации — файл, путь к которому передаётся через -config.
+// Pipeline: loadFromFile → setDefaults → validate.
 func Load(path string) (*Config, error) {
 	cfg := &Config{}
 
@@ -61,196 +48,38 @@ func (c *Config) loadFromFile(path string) error {
 	if err != nil {
 		return err
 	}
-
-	expanded := os.ExpandEnv(string(data))
-
-	return yaml.Unmarshal([]byte(expanded), c)
+	return yaml.Unmarshal(data, c)
 }
 
-func (c *Config) loadFromEnv() {
-	// Server
-	if port := os.Getenv("SERVER_PORT"); port != "" {
-		if p, err := strconv.Atoi(port); err == nil {
-			c.Server.Port = p
-		}
-	}
-	if timeout := os.Getenv("SERVER_READ_TIMEOUT"); timeout != "" {
-		if d, err := time.ParseDuration(timeout); err == nil {
-			c.Server.ReadTimeout = d
-		}
-	}
-	if timeout := os.Getenv("SERVER_WRITE_TIMEOUT"); timeout != "" {
-		if d, err := time.ParseDuration(timeout); err == nil {
-			c.Server.WriteTimeout = d
-		}
-	}
-	if timeout := os.Getenv("SERVER_SUTDOWN_TIMEOUT"); timeout != "" {
-		if d, err := time.ParseDuration(timeout); err == nil {
-			c.Server.ShutdownTimeout = d
-		}
-	}
-
-	if url := os.Getenv("DATABASE_URL"); url != "" {
-		c.Database.URL = url
-	}
-
-	if oConns := os.Getenv("DB_MAX_OPEN_CONNS"); oConns != "" {
-		if n, err := strconv.Atoi(oConns); err == nil {
-			c.Database.MaxOpenConns = n
-		}
-	}
-	if iConns := os.Getenv("DB_MAX_IDLE_CONNS"); iConns != "" {
-		if n, err := strconv.Atoi(iConns); err == nil {
-			c.Database.MaxIdleConns = n
-		}
-	}
-	if lifetime := os.Getenv("DB_CONNS_MAX_LIFETIME"); lifetime != "" {
-		if d, err := time.ParseDuration(lifetime); err == nil {
-			c.Database.ConnMaxLifetime = d
-		}
-	}
-
-	if level := os.Getenv("LOG_LEVEL"); level != "" {
-		c.Log.Level = level
-	}
-	if format := os.Getenv("LOG_FORMAT"); format != "" {
-		c.Log.Format = format
-	}
-}
-
+// setDefaults делегирует проставление defaults каждому модульному конфигу.
 func (c *Config) setDefaults() {
-	if c.Server.Port == 0 {
-		c.Server.Port = 8080
-	}
-	if c.Server.ReadTimeout == 0 {
-		c.Server.ReadTimeout = 10 * time.Second
-	}
-	if c.Server.WriteTimeout == 0 {
-		c.Server.WriteTimeout = 10 * time.Second
-	}
-	if c.Server.ShutdownTimeout == 0 {
-		c.Server.ShutdownTimeout = 10 * time.Second
-	}
-
-	if c.Database.URL == "" {
-		c.Database.URL = "postgres://postgres:postgres@localhost:5432/<base>?sslmode=disable"
-	}
-	if c.Database.MaxOpenConns == 0 {
-		c.Database.MaxOpenConns = 25
-	}
-	if c.Database.MaxIdleConns == 0 {
-		c.Database.MaxIdleConns = 5
-	}
-	if c.Database.ConnMaxLifetime == 0 {
-		c.Database.ConnMaxLifetime = 5 * time.Minute
-	}
-
-	if c.Log.Level == "" {
-		c.Log.Level = "info"
-	}
-	if c.Log.Format == "" {
-		c.Log.Format = "json"
-	}
-
-	d := defaultCookieConfig()
-	if c.Cookie.Name == "" {
-		c.Cookie.Name = d.Name
-	}
-	if c.Cookie.Path == "" {
-		c.Cookie.Path = d.Path
-	}
-	if c.Cookie.SameSite == "" {
-		c.Cookie.SameSite = d.SameSite
-	}
-	if c.Cookie.TTL == 0 {
-		c.Cookie.TTL = d.TTL
-	}
-
-	if c.CORS.AllowedOrigins == nil {
-		c.CORS.AllowedOrigins = defaultCORSConfig().AllowedOrigins
-	}
-
-	da := defaultAuthConfig()
-	if c.Auth.AccessTokenTTL == 0 {
-		c.Auth.AccessTokenTTL = da.AccessTokenTTL
-	}
-	if c.Auth.RefreshTokenBytes == 0 {
-		c.Auth.RefreshTokenBytes = da.RefreshTokenBytes
-	}
-
-	darg := defaultArgon2Config()
-	if c.Argon2.Memory == 0 {
-		c.Argon2.Memory = darg.Memory
-	}
-	if c.Argon2.Iterations == 0 {
-		c.Argon2.Iterations = darg.Iterations
-	}
-	if c.Argon2.Parallelism == 0 {
-		c.Argon2.Parallelism = darg.Parallelism
-	}
-	if c.Argon2.SaltLength == 0 {
-		c.Argon2.SaltLength = darg.SaltLength
-	}
-	if c.Argon2.KeyLength == 0 {
-		c.Argon2.KeyLength = darg.KeyLength
-	}
-
-	dsmtp := defaultSMTPConfig()
-	if c.SMTP.Host == "" {
-		c.SMTP.Host = dsmtp.Host
-	}
-	if c.SMTP.Port == 0 {
-		c.SMTP.Port = dsmtp.Port
-	}
-	if c.SMTP.FallbackTimeoutSeconds == 0 {
-		c.SMTP.FallbackTimeoutSeconds = dsmtp.FallbackTimeoutSeconds
-	}
-
-	dpr := defaultPasswordResetConfig()
-	if c.PasswordReset.TTL == 0 {
-		c.PasswordReset.TTL = dpr.TTL
-	}
-	if c.PasswordReset.BaseURL == "" {
-		c.PasswordReset.BaseURL = dpr.BaseURL
-	}
+	c.Server.ApplyDefaults()
+	c.Database.ApplyDefaults()
+	c.Log.ApplyDefaults()
+	c.Auth.ApplyDefaults()
+	c.Cookie.ApplyDefaults()
+	c.Argon2.ApplyDefaults()
+	c.CORS.ApplyDefaults()
+	c.SMTP.ApplyDefaults()
+	c.PasswordReset.ApplyDefaults()
 }
 
+// validate делегирует валидацию каждому модульному конфигу.
 func (c *Config) validate() error {
-	if c.Server.Port <= 0 || c.Server.Port > 65535 {
-		return fmt.Errorf("invalid server port: %d", c.Server.Port)
+	if err := c.Server.Validate(); err != nil {
+		return err
 	}
-	if c.Database.URL == "" {
-		return fmt.Errorf("database URL is required")
+	if err := c.Database.Validate(); err != nil {
+		return err
 	}
-	if c.Auth.JWTSecret == "" {
-		return fmt.Errorf("auth.jwt_secret is required")
+	if err := c.Auth.Validate(); err != nil {
+		return err
 	}
-	if c.SMTP.From == "" {
-		return fmt.Errorf("smtp.from is required")
+	if err := c.SMTP.Validate(); err != nil {
+		return err
 	}
-	if c.SMTP.Host == "" {
-		return fmt.Errorf("smtp.host is required")
-	}
-	if c.SMTP.Port <= 0 {
-		return fmt.Errorf("smtp.port must be greater than 0")
-	}
-	if c.SMTP.FallbackTimeoutSeconds <= 0 {
-		return fmt.Errorf("smtp.fallback_timeout_seconds must be greater than 0")
-	}
-	if c.SMTP.AuthEnabled {
-		if c.SMTP.Username == "" || c.SMTP.Password == "" {
-			return fmt.Errorf("smtp.username and smtp.password are required when smtp.auth_enabled=true")
-		}
-	} else {
-		if c.SMTP.Username != "" || c.SMTP.Password != "" {
-			return fmt.Errorf("smtp.username and smtp.password must be empty when smtp.auth_enabled=false")
-		}
-	}
-	if c.PasswordReset.TTL <= 0 {
-		return fmt.Errorf("password_reset.ttl must be greater than 0")
-	}
-	if c.PasswordReset.BaseURL == "" {
-		return fmt.Errorf("password_reset.base_url is required")
+	if err := c.PasswordReset.Validate(); err != nil {
+		return err
 	}
 	return nil
 }

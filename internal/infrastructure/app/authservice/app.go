@@ -33,12 +33,7 @@ type App struct {
 }
 
 func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
-	db, err := pginfra.NewConnection(pginfra.Config{
-		URL:             cfg.Database.URL,
-		MaxOpenConns:    cfg.Database.MaxOpenConns,
-		MaxIdleConns:    cfg.Database.MaxIdleConns,
-		ConnMaxLifetime: cfg.Database.ConnMaxLifetime,
-	})
+	db, err := pginfra.NewConnection(cfg.Database)
 	if err != nil {
 		return nil, fmt.Errorf("connect postgres: %w", err)
 	}
@@ -52,34 +47,13 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	resetRepo := pgadapter.NewPasswordResetRepository(db)
 	txManager := pgadapter.NewTxManager(db)
 
-	hasher := authadapter.NewPasswordHasher(authadapter.Argon2Params{
-		Memory:      cfg.Argon2.Memory,
-		Iterations:  cfg.Argon2.Iterations,
-		Parallelism: cfg.Argon2.Parallelism,
-		SaltLength:  cfg.Argon2.SaltLength,
-		KeyLength:   cfg.Argon2.KeyLength,
-	})
-	tokenProvider := authadapter.NewTokenProvider(authadapter.TokenProviderConfig{
-		Secret:            cfg.Auth.JWTSecret,
-		AccessTokenTTL:    cfg.Auth.AccessTokenTTL,
-		RefreshTokenBytes: cfg.Auth.RefreshTokenBytes,
-	})
+	hasher := authadapter.NewPasswordHasher(cfg.Argon2)
+	tokenProvider := authadapter.NewTokenProvider(cfg.Auth)
 	tokenHasher := authadapter.NewTokenHasher()
 	clockImpl := system.NewClock()
 	uuidGen := system.NewUUIDGenerator()
 
-	mailer := mailadapter.NewSMTPMailer(mailadapter.SMTPConfig{
-		Host:                   cfg.SMTP.Host,
-		Port:                   cfg.SMTP.Port,
-		AuthEnabled:            cfg.SMTP.AuthEnabled,
-		Username:               cfg.SMTP.Username,
-		Password:               cfg.SMTP.Password,
-		From:                   cfg.SMTP.From,
-		BaseURL:                cfg.PasswordReset.BaseURL,
-		ResetTTL:               cfg.PasswordReset.TTL,
-		FallbackTimeoutSeconds: cfg.SMTP.FallbackTimeoutSeconds,
-		SkipTLSVerify:          cfg.SMTP.SkipTLSVerify,
-	})
+	mailer := mailadapter.NewSMTPMailer(cfg.SMTP, cfg.PasswordReset)
 
 	resolver := common.NewPermissionResolver(userRoleRepo, rolePermRepo, roleRepo, permRepo)
 

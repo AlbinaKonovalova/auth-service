@@ -1,0 +1,30 @@
+# Version control
+.git
+.gitignore
+
+# Build artifacts
+bin/
+
+# Test output
+*.out
+*.test
+coverage.html
+coverage.txt
+
+# Local dev files
+*.env
+*.local
+cookies.txt
+local.run.sh
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker itself
+Dockerfile
+.dockerignore
+docker/
