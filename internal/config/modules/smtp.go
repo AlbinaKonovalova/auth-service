@@ -2,7 +2,6 @@ package modules
 
 import "fmt"
 
-// SMTPConfig хранит настройки SMTP-сервера для отправки email.
 type SMTPConfig struct {
 	Host                   string `yaml:"host"`
 	Port                   int    `yaml:"port"`

@@ -4,8 +4,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
 )
 
-// AccessService реализует input.AccessUseCase.
-// Оркестрирует сценарии управления ролями пользователей и permissions ролей.
 type AccessService struct {
 	userRepo     output.UserRepository
 	userRoleRepo output.UserRoleRepository

@@ -9,10 +9,6 @@ import (
 	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 )
 
-// GetUserRoles возвращает доменное представление ролей пользователя.
-// Сначала проверяет существование пользователя, затем загружает его роли.
-// Сборка доменного результата (dedup, sort, проверка битых связей)
-// делегирована в domain/service.BuildUserRolesResult.
 func (s *AccessService) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]domainservice.RoleView, error) {
 	_, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {

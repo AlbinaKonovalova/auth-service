@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ActivateUser активирует пользователя.
-// Сценарий идемпотентен: если пользователь уже активен — возвращает success.
 func (s *UserService) ActivateUser(ctx context.Context, id uuid.UUID) error {
 	return s.tx.RunInTx(ctx, func(ctx context.Context) error {
 		user, err := s.users.FindByIDForUpdate(ctx, id)

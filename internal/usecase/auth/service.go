@@ -47,5 +47,4 @@ func NewAuthService(
 	}
 }
 
-// compile-time check
 var _ input.AuthUseCase = (*AuthService)(nil)

@@ -9,15 +9,12 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/entity"
 )
 
-// PermissionView — доменное представление permission.
 type PermissionView struct {
 	ID          uuid.UUID
 	Code        string
 	Description string
 }
 
-// PermissionViewFromEntity конвертирует entity.Permission в PermissionView.
-// Единственный источник истины для маппинга permission в доменное представление.
 func PermissionViewFromEntity(p entity.Permission) PermissionView {
 	return PermissionView{
 		ID:          p.ID,
@@ -26,9 +23,6 @@ func PermissionViewFromEntity(p entity.Permission) PermissionView {
 	}
 }
 
-// ValidatePermissionDeletion проверяет доменное правило:
-// permission нельзя удалить, пока он назначен хотя бы одной роли.
-// Возвращает domain.ErrPermissionInUse если связь существует.
 func ValidatePermissionDeletion(hasRoles bool) error {
 	if hasRoles {
 		return domain.ErrPermissionInUse
@@ -36,10 +30,6 @@ func ValidatePermissionDeletion(hasRoles bool) error {
 	return nil
 }
 
-// BuildPermissionListResult преобразует []entity.Permission в []PermissionView.
-// Сортирует по code — стабильный порядок business result зафиксирован здесь,
-// а не делегируется ORDER BY в repo.
-// Используется в ListPermissions сценарии.
 func BuildPermissionListResult(permissions []entity.Permission) []PermissionView {
 	result := make([]PermissionView, len(permissions))
 	for i, p := range permissions {
@@ -51,15 +41,6 @@ func BuildPermissionListResult(permissions []entity.Permission) []PermissionView
 	return result
 }
 
-// BuildRolePermissionsResult формирует итоговый список permissions роли:
-//   - дедублицирует по ID (на случай дублей в данных)
-//   - проверяет, что для каждого permission_id из rolePerms существует permission в справочнике;
-//     если связь битая (permission_id есть в role_permissions, но нет в справочнике) —
-//     возвращает domain.ErrDataIntegrityViolation, а не бизнесовый ErrPermissionNotFound,
-//     чтобы не смешивать нарушение целостности данных с обычным "not found" по запросу пользователя
-//   - сортирует по code для стабильного порядка ответа
-//
-// Используется в GetRolePermissions сценарии.
 func BuildRolePermissionsResult(rolePerms []entity.RolePermission, permissions []entity.Permission) ([]PermissionView, error) {
 	if len(rolePerms) == 0 {
 		return []PermissionView{}, nil

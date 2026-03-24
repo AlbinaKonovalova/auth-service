@@ -106,9 +106,6 @@ func (r *RoleRepository) FindByCode(ctx context.Context, code string) (*entity.R
 	return &role, nil
 }
 
-// FindByCodeForUpdate читает роль с блокировкой строки (SELECT ... FOR UPDATE).
-// Используется в write-сценариях внутри транзакции — гарантирует, что параллельная
-// транзакция не изменит роль пока текущая не завершится.
 func (r *RoleRepository) FindByCodeForUpdate(ctx context.Context, code string) (*entity.Role, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -186,7 +183,6 @@ func (r *RoleRepository) Create(ctx context.Context, role entity.Role) error {
 	return nil
 }
 
-// Delete удаляет роль по ID. Проверяет RowsAffected — если 0, возвращает ErrRoleNotFound.
 func (r *RoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	q := ExtractTx(ctx, r.db)
 

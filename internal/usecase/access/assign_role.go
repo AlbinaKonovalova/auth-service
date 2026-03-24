@@ -9,14 +9,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-// AssignRole назначает роль пользователю.
-// Весь сценарий выполняется в одной транзакции:
-//  1. доменная валидация role code
-//  2. проверка существования пользователя
-//  3. получение роли по code
-//  4. явная проверка: роль уже назначена → вернуть nil (идемпотентность на уровне сценария)
-//  5. создание entity.UserRole
-//  6. сохранение; ON CONFLICT DO NOTHING в repo — второй слой защиты от гонок
 func (s *AccessService) AssignRole(ctx context.Context, in input.AssignRoleInput) error {
 	roleCode, err := value.NewRoleCode(in.RoleCode)
 	if err != nil {

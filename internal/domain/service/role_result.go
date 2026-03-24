@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// RoleView — доменное представление роли.
 type RoleView struct {
 	ID          uuid.UUID
 	Code        string
@@ -16,9 +15,6 @@ type RoleView struct {
 	Description string
 }
 
-// RoleViewFromEntity конвертирует entity.Role в RoleView.
-// Единственный источник истины для маппинга роли в доменное представление.
-// Используется в CreateRole и других сценариях, где нужно вернуть одну роль.
 func RoleViewFromEntity(r entity.Role) RoleView {
 	return RoleView{
 		ID:          r.ID,
@@ -28,9 +24,6 @@ func RoleViewFromEntity(r entity.Role) RoleView {
 	}
 }
 
-// ValidateRoleDeletion проверяет доменное правило:
-// роль нельзя удалить, пока она назначена пользователям или имеет назначенные permissions.
-// Возвращает domain.ErrRoleInUse если хотя бы одна из связей существует.
 func ValidateRoleDeletion(hasUsers bool, hasPermissions bool) error {
 	if hasUsers || hasPermissions {
 		return domain.ErrRoleInUse
@@ -38,10 +31,6 @@ func ValidateRoleDeletion(hasUsers bool, hasPermissions bool) error {
 	return nil
 }
 
-// BuildRoleListResult преобразует []entity.Role в []RoleView.
-// Сортирует по code — стабильный порядок business result зафиксирован здесь,
-// а не делегируется ORDER BY в repo.
-// Используется в ListRoles сценарии.
 func BuildRoleListResult(roles []entity.Role) []RoleView {
 	result := make([]RoleView, len(roles))
 	for i, r := range roles {
@@ -53,13 +42,6 @@ func BuildRoleListResult(roles []entity.Role) []RoleView {
 	return result
 }
 
-// BuildUserRolesResult формирует итоговый список ролей пользователя:
-//   - дедублицирует по ID (на случай дублей в данных)
-//   - проверяет, что для каждого role_id из userRoles существует роль в справочнике;
-//     если связь битая (role_id есть в user_roles, но нет в справочнике) —
-//     возвращает domain.ErrDataIntegrityViolation, а не бизнесовый ErrRoleNotFound,
-//     чтобы не смешивать нарушение целостности данных с обычным "not found" по запросу пользователя
-//   - сортирует по code для стабильного порядка ответа
 func BuildUserRolesResult(userRoles []entity.UserRole, roles []entity.Role) ([]RoleView, error) {
 	if len(userRoles) == 0 {
 		return []RoleView{}, nil

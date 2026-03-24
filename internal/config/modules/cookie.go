@@ -2,7 +2,6 @@ package modules
 
 import "time"
 
-// CookieConfig хранит настройки httpOnly refresh cookie.
 type CookieConfig struct {
 	Name     string        `yaml:"name"`
 	Path     string        `yaml:"path"`
@@ -12,8 +11,6 @@ type CookieConfig struct {
 	TTL      time.Duration `yaml:"ttl"`
 }
 
-// IsSecure возвращает значение Secure-флага cookie.
-// Если поле не задано — возвращает true (безопасный дефолт).
 func (c CookieConfig) IsSecure() bool {
 	if c.Secure == nil {
 		return true

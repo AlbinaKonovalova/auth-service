@@ -37,7 +37,6 @@ func TestNewAccessClaims_WhitespaceEmail(t *testing.T) {
 }
 
 func TestNewAccessClaims_NilRolesAndPermissions_Valid(t *testing.T) {
-	// nil роли и permissions допустимы — пользователь без ролей/permissions
 	claims, err := value.NewAccessClaims(uuid.New(), "user@example.com", nil, nil)
 	require.NoError(t, err)
 	assert.Nil(t, claims.Roles)

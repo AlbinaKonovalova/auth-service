@@ -9,10 +9,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain"
 )
 
-// PasswordResetToken представляет одноразовый токен для сброса пароля.
-// Токен считается применимым (usable), если он не истёк и не был использован ранее.
-// В модели сервиса нет отдельного состояния "revoked" —
-// аннулирование предыдущих токенов при новом запросе кодируется через UsedAt (invalidation as used).
 type PasswordResetToken struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
@@ -57,20 +53,14 @@ func NewPasswordResetToken(id, userID uuid.UUID, tokenHash string, now time.Time
 	}, nil
 }
 
-// IsExpired возвращает true если токен истёк к моменту now.
 func (t *PasswordResetToken) IsExpired(now time.Time) bool {
 	return !now.Before(t.ExpiresAt)
 }
 
-// IsUsed возвращает true если токен уже был использован или аннулирован.
 func (t *PasswordResetToken) IsUsed() bool {
 	return t.UsedAt != nil
 }
 
-// EnsureUsable проверяет, что токен можно применить.
-// Возвращает доменную ошибку если токен истёк или уже использован.
-// Порядок проверок зафиксирован: сначала expired, затем used —
-// истёкший токен не должен раскрывать информацию о том, был ли он использован.
 func (t *PasswordResetToken) EnsureUsable(now time.Time) error {
 	if t.IsExpired(now) {
 		return domain.ErrResetTokenExpired

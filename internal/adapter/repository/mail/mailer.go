@@ -11,13 +11,11 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
-// SMTPMailer реализует output.Mailer через SMTP.
 type SMTPMailer struct {
 	smtp          modules.SMTPConfig
 	passwordReset modules.PasswordResetConfig
 }
 
-// NewSMTPMailer создаёт новый SMTP mailer.
 func NewSMTPMailer(smtpCfg modules.SMTPConfig, passwordResetCfg modules.PasswordResetConfig) *SMTPMailer {
 	return &SMTPMailer{
 		smtp:          smtpCfg,
@@ -25,8 +23,6 @@ func NewSMTPMailer(smtpCfg modules.SMTPConfig, passwordResetCfg modules.Password
 	}
 }
 
-// SendPasswordResetEmail отправляет письмо с ссылкой для сброса пароля.
-// resetToken — сырой (не захешированный) токен, который вставляется в ссылку.
 func (m *SMTPMailer) SendPasswordResetEmail(ctx context.Context, toEmail string, resetToken string) error {
 	resetLink := fmt.Sprintf("%s?token=%s", m.passwordReset.BaseURL, resetToken)
 	ttlMinutes := int(m.passwordReset.TTL.Minutes())
@@ -45,7 +41,6 @@ func (m *SMTPMailer) SendPasswordResetEmail(ctx context.Context, toEmail string,
 	return m.send(ctx, toEmail, msg)
 }
 
-// send выполняет весь SMTP-диалог: dial → STARTTLS → AUTH → DATA → Quit.
 func (m *SMTPMailer) send(ctx context.Context, toEmail, msg string) error {
 	addr := fmt.Sprintf("%s:%d", m.smtp.Host, m.smtp.Port)
 

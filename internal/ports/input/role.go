@@ -6,16 +6,13 @@ import (
 	domainservice "github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 )
 
-// CreateRoleInput — входные данные для создания новой роли.
 type CreateRoleInput struct {
 	Code        string
 	Name        string
 	Description string
 }
 
-// RoleUseCase — входной контракт для roles admin API.
 type RoleUseCase interface {
-	// ListRoles возвращает полный список ролей.
 	ListRoles(ctx context.Context) ([]domainservice.RoleView, error)
 
 	// CreateRole создаёт новую роль.

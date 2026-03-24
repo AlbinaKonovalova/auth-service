@@ -65,7 +65,6 @@ func TestBuildNewUserAggregate_DuplicateRoleCodes(t *testing.T) {
 }
 
 func TestBuildNewUserAggregate_RoleNotFound(t *testing.T) {
-	// Запрошен admin, но в foundRoles его нет
 	_, err := entity.BuildNewUserAggregate(
 		testUserID, "user@example.com", "ValidPass1!", "hash",
 		[]string{"admin"}, []entity.Role{{Code: "manager"}}, testNow,
@@ -97,8 +96,6 @@ func TestBuildNewUserAggregate_NormalizeEmailToLower(t *testing.T) {
 	assert.Equal(t, "user@example.com", agg.User.Email)
 }
 
-// Проверяет, что value.NewRoleCode применяется к каждому raw code —
-// невалидный код (пустая строка) отклоняется.
 func TestBuildNewUserAggregate_InvalidRoleCode(t *testing.T) {
 	_, err := entity.BuildNewUserAggregate(
 		testUserID, "user@example.com", "ValidPass1!", "hash",
@@ -107,13 +104,9 @@ func TestBuildNewUserAggregate_InvalidRoleCode(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrInvalidRoleCode)
 }
 
-// Проверяет корректность работы с value.RoleCode —
-// нормализация происходит в NormalizeRequestedRoleCodes, поэтому
-// "ADMIN" и "admin" должны стать дублём.
 func TestBuildNewUserAggregate_RoleCodeNormalization(t *testing.T) {
 	role := entity.Role{ID: uuid.New(), Code: "admin", Name: "Admin"}
 
-	// Только один "admin" после нормализации — не дубль
 	agg, err := entity.BuildNewUserAggregate(
 		testUserID, "user@example.com", "ValidPass1!", "hash",
 		[]string{"ADMIN"}, []entity.Role{role}, testNow,
@@ -122,8 +115,6 @@ func TestBuildNewUserAggregate_RoleCodeNormalization(t *testing.T) {
 	assert.Len(t, agg.UserRoles, 1)
 }
 
-// Специально передаём rawRoleCodes содержащий code, которого нет в value package,
-// чтобы убедиться что EnsureAllRequestedRolesExist тоже покрыт через factory.
 func TestBuildNewUserAggregate_RequestedRoleNotInFoundList(t *testing.T) {
 	_, err := entity.BuildNewUserAggregate(
 		testUserID, "user@example.com", "ValidPass1!", "hash",
@@ -134,7 +125,6 @@ func TestBuildNewUserAggregate_RequestedRoleNotInFoundList(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrRoleNotFound)
 }
 
-// Хелпер - используется в нескольких тестах user_factory_test.go
 func newValidRole(code string) entity.Role {
 	return entity.Role{ID: uuid.New(), Code: code, Name: code}
 }

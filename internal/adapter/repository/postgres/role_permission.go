@@ -131,8 +131,6 @@ func (r *RolePermissionRepository) Revoke(ctx context.Context, roleID, permissio
 	return nil
 }
 
-// ExistsByRoleID возвращает true если роли назначен хотя бы один permission.
-// Используется в delete role сценарии для проверки связей перед удалением.
 func (r *RolePermissionRepository) ExistsByRoleID(ctx context.Context, roleID uuid.UUID) (bool, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -146,8 +144,6 @@ func (r *RolePermissionRepository) ExistsByRoleID(ctx context.Context, roleID uu
 	return exists, nil
 }
 
-// ExistsByPermissionID возвращает true если permission назначен хотя бы одной роли.
-// Используется в delete permission сценарии для проверки связей перед удалением.
 func (r *RolePermissionRepository) ExistsByPermissionID(ctx context.Context, permissionID uuid.UUID) (bool, error) {
 	q := ExtractTx(ctx, r.db)
 

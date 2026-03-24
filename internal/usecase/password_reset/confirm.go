@@ -24,11 +24,10 @@ import (
 //     д) пометить reset token как used — MarkUsed дополнительно защищает от race через RowsAffected
 //     е) отозвать все refresh sessions пользователя
 //
-// Повторный confirm тем же token вернёт ErrResetTokenUsed.
+
 func (s *PasswordResetService) ConfirmPasswordReset(ctx context.Context, in input.ConfirmPasswordResetInput) error {
 	now := s.clock.Now()
 
-	// Валидация нового пароля через value object
 	if _, err := value.NewPassword(in.NewPassword); err != nil {
 		return err
 	}
@@ -37,9 +36,7 @@ func (s *PasswordResetService) ConfirmPasswordReset(ctx context.Context, in inpu
 	tokenHash := s.tokenHasher.Hash(in.Token)
 
 	return s.tx.RunInTx(ctx, func(ctx context.Context) error {
-		// Найти и заблокировать reset token по hash (FOR UPDATE).
-		// Lock берётся именно на token row — token определяет одноразовость сценария.
-		// Параллельные confirm будут ждать снятия блокировки.
+
 		resetToken, err := s.resetRepo.FindByTokenHashForUpdate(ctx, tokenHash.String())
 		if err != nil {
 			if errors.Is(err, domain.ErrResetTokenNotFound) {
@@ -48,28 +45,23 @@ func (s *PasswordResetService) ConfirmPasswordReset(ctx context.Context, in inpu
 			return fmt.Errorf("find reset token for update: %w", err)
 		}
 
-		// Проверить применимость через доменный метод (expired → used, в таком порядке)
 		if err := resetToken.EnsureUsable(now); err != nil {
 			return err
 		}
 
-		// Посчитать новый password hash через hasher
 		newPasswordHash, err := s.hasher.Hash(in.NewPassword)
 		if err != nil {
 			return fmt.Errorf("hash new password: %w", err)
 		}
 
-		// Обновить password hash пользователя
 		if err := s.userRepo.UpdatePasswordHash(ctx, resetToken.UserID, newPasswordHash); err != nil {
 			return fmt.Errorf("update password hash: %w", err)
 		}
 
-		// Пометить reset token как used — одноразовость гарантируется lock + RowsAffected
 		if err := s.resetRepo.MarkUsed(ctx, resetToken.ID, now); err != nil {
 			return fmt.Errorf("mark reset token used: %w", err)
 		}
 
-		// Отозвать все refresh sessions пользователя
 		if err := s.sessionRepo.RevokeAllByUserID(ctx, resetToken.UserID); err != nil {
 			return fmt.Errorf("revoke refresh sessions: %w", err)
 		}

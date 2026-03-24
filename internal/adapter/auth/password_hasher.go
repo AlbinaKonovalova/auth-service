@@ -13,7 +13,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
-// decodedArgon2Params используется только при декодировании хеша из БД.
 type decodedArgon2Params struct {
 	Memory      uint32
 	Iterations  uint32

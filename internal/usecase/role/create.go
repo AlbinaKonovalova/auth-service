@@ -11,15 +11,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-// CreateRole создаёт новую роль.
-// Сценарий выполняется в одной транзакции (read-check-write):
-//  1. доменная валидация role code через value.NewRoleCode
-//  2. доменный конструктор entity.NewRole проверяет name и нормализует description
-//  3. внутри tx — проверка уникальности code; если code занят — domain.ErrDuplicateRoleCode
-//  4. внутри tx — вставка новой роли; при race unique violation в DB также возвращает domain.ErrDuplicateRoleCode
-//
-// Итоговое представление формируется через domain/service.RoleViewFromEntity —
-// единственный источник истины для маппинга entity.Role в доменный result.
 func (s *RoleService) CreateRole(ctx context.Context, in input.CreateRoleInput) (domainservice.RoleView, error) {
 	roleCode, err := value.NewRoleCode(in.Code)
 	if err != nil {

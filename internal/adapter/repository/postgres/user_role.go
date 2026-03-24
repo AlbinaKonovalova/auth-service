@@ -47,11 +47,6 @@ func (r *UserRoleRepository) FindByUserID(ctx context.Context, userID uuid.UUID)
 	return result, rows.Err()
 }
 
-// FindByUserIDForUpdate читает назначения пользователя с блокировкой строк (SELECT ... FOR UPDATE).
-// Используется в write-сценариях внутри транзакции, где доменное правило зависит
-// от текущего набора строк — например, "нельзя снять последнюю роль".
-// Без блокировки параллельные транзакции могут читать одно и то же состояние
-// и оба пройти доменную проверку, несмотря на race.
 func (r *UserRoleRepository) FindByUserIDForUpdate(ctx context.Context, userID uuid.UUID) ([]entity.UserRole, error) {
 	q := ExtractTx(ctx, r.db)
 
@@ -173,8 +168,6 @@ func (r *UserRoleRepository) Revoke(ctx context.Context, userID, roleID uuid.UUI
 	return nil
 }
 
-// ExistsByRoleID возвращает true если хотя бы один пользователь имеет эту роль.
-// Используется в delete role сценарии для проверки связей перед удалением.
 func (r *UserRoleRepository) ExistsByRoleID(ctx context.Context, roleID uuid.UUID) (bool, error) {
 	q := ExtractTx(ctx, r.db)
 

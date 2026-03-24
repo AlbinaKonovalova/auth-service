@@ -9,14 +9,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-// AssignPermission назначает permission роли.
-// Весь сценарий выполняется в одной транзакции:
-//  1. доменная валидация role code и permission code
-//  2. получение роли по code — возвращает ErrRoleNotFound если не существует
-//  3. получение permission по code — возвращает ErrPermissionNotFound если не существует
-//  4. создание entity.RolePermission
-//  5. сохранение; ON CONFLICT DO NOTHING в repo обеспечивает идемпотентность при гонке —
-//     usecase задаёт семантику сценария, база атомарно исполняет уже принятое решение
 func (s *AccessService) AssignPermission(ctx context.Context, in input.AssignPermissionInput) error {
 	roleCode, err := value.NewRoleCode(in.RoleCode)
 	if err != nil {

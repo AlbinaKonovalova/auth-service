@@ -10,14 +10,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/value"
 )
 
-// GetRolePermissions возвращает список permissions роли.
-// Порядок:
-//  1. доменная валидация role code
-//  2. получение роли по code — возвращает ErrRoleNotFound если роль не существует
-//  3. чтение связей role ↔ permission
-//  4. загрузка permission справочника по найденным IDs
-//  5. сборка итогового доменного результата — domain/service.BuildRolePermissionsResult:
-//     проверяет битые связи, дедуплицирует, сортирует по code
 func (s *AccessService) GetRolePermissions(ctx context.Context, roleCode string) ([]domainservice.PermissionView, error) {
 	rc, err := value.NewRoleCode(roleCode)
 	if err != nil {

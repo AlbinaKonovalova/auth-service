@@ -6,8 +6,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
 )
 
-// PasswordResetService реализует input.PasswordResetUseCase.
-// Оркестрирует сценарии request и confirm password reset.
 type PasswordResetService struct {
 	userRepo      output.UserRepository
 	resetRepo     output.PasswordResetRepository

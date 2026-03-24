@@ -1,6 +1,5 @@
 package modules
 
-// CORSConfig хранит настройки CORS.
 type CORSConfig struct {
 	AllowedOrigins []string `yaml:"allowed_origins"`
 }
