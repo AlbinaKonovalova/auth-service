@@ -55,7 +55,6 @@ func TestRequestPasswordReset_Success(t *testing.T) {
 	assert.True(t, emailSent, "email must be sent")
 }
 
-// Неизвестный email — молча успех (no user enumeration).
 func TestRequestPasswordReset_UnknownEmail_SilentSuccess(t *testing.T) {
 	b := newRequestBuilder()
 	b.userRepo.findByEmailFn = func(_ context.Context, _ value.Email) (*entity.User, error) {
@@ -77,7 +76,6 @@ func TestRequestPasswordReset_UnknownEmail_SilentSuccess(t *testing.T) {
 	assert.NoError(t, err) // no user enumeration
 }
 
-// Невалидный email — молча успех (no user enumeration).
 func TestRequestPasswordReset_InvalidEmail_SilentSuccess(t *testing.T) {
 	b := newRequestBuilder()
 	b.userRepo.findByEmailFn = func(_ context.Context, _ value.Email) (*entity.User, error) {
@@ -92,7 +90,6 @@ func TestRequestPasswordReset_InvalidEmail_SilentSuccess(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// Инфраструктурная ошибка БД не маскируется (не ErrUserNotFound).
 func TestRequestPasswordReset_DBError_Propagated(t *testing.T) {
 	infraErr := errors.New("connection lost")
 
@@ -108,7 +105,6 @@ func TestRequestPasswordReset_DBError_Propagated(t *testing.T) {
 	assert.ErrorContains(t, err, "connection lost")
 }
 
-// Старые токены инвалидируются до создания нового.
 func TestRequestPasswordReset_OldTokensInvalidatedBeforeNew(t *testing.T) {
 	var callOrder []string
 
@@ -139,7 +135,6 @@ func TestRequestPasswordReset_OldTokensInvalidatedBeforeNew(t *testing.T) {
 	require.Equal(t, []string{"invalidate", "create", "send_email"}, callOrder)
 }
 
-// Email отправляется только после успешного commit транзакции.
 func TestRequestPasswordReset_EmailNotSentIfTxFails(t *testing.T) {
 	var emailSent bool
 	txErr := errors.New("tx failed")
@@ -165,9 +160,6 @@ func TestRequestPasswordReset_EmailNotSentIfTxFails(t *testing.T) {
 	assert.False(t, emailSent, "email must not be sent if transaction failed")
 }
 
-// TestRequestPasswordReset_TokenDataContract проверяет ключевой контракт:
-// Create(...) получает TokenHash (хеш), а SendPasswordResetEmail(...) получает raw token.
-// Они не должны быть перепутаны.
 func TestRequestPasswordReset_TokenDataContract(t *testing.T) {
 	var createdTokenHash string
 	var mailedRawToken string
@@ -192,9 +184,6 @@ func TestRequestPasswordReset_TokenDataContract(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// mockTokenProvider возвращает: raw="raw-token", hash="hashed-token"
-	// mockTokenHasher.Hash даёт value.TokenHash("hashed-" + raw)
-	// GeneratePasswordResetToken возвращает raw и hash напрямую из TokenProvider
 	assert.Equal(t, "hashed-token", createdTokenHash, "repo должен получить hash, а не raw token")
 	assert.Equal(t, "raw-token", mailedRawToken, "mailer должен получить raw token, а не hash")
 	assert.NotEqual(t, createdTokenHash, mailedRawToken, "hash и raw token не должны совпадать")
@@ -212,8 +201,7 @@ func newRequestBuilder() *requestBuilder {
 		resetRepo: &mockPasswordResetRepo{},
 		mailer:    &mockMailer{},
 	}
-	// дефолтный FindByIDForUpdate: возвращает того же пользователя, что и FindByEmail.
-	// request.go вызывает FindByIDForUpdate внутри транзакции для lock user row.
+
 	b.userRepo.findByIDForUpdateFn = func(_ context.Context, _ uuid.UUID) (*entity.User, error) {
 		u := entity.User{ID: fixedUserID, Email: "admin@example.com", IsActive: true}
 		return &u, nil

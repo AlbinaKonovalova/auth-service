@@ -6,11 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// CanRevokeUserRole проверяет доменные правила отзыва роли у пользователя:
-//  1. роль должна быть назначена пользователю → иначе ErrUserRoleNotFound
-//  2. нельзя снять последнюю роль у пользователя → иначе ErrCannotRevokeLastRole
-//
-// Принимает все текущие назначения пользователя и roleID который хотим снять.
 func CanRevokeUserRole(userRoles []entity.UserRole, revokeRoleID uuid.UUID) error {
 	assigned := false
 	remaining := 0

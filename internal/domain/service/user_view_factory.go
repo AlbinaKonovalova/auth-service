@@ -75,8 +75,6 @@ func BuildUserList(
 	}, nil
 }
 
-// BuildAdminUserView собирает доменное представление одного пользователя с его ролями.
-// Используется в GetUser и CreateUser сценариях.
 func BuildAdminUserView(
 	user entity.User,
 	userRoles []entity.UserRole,

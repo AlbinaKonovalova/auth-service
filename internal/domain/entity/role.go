@@ -15,7 +15,6 @@ type Role struct {
 	Description string
 }
 
-// NewRoleParams — входные данные для создания новой роли.
 type NewRoleParams struct {
 	ID          uuid.UUID
 	Code        string
@@ -23,14 +22,6 @@ type NewRoleParams struct {
 	Description string
 }
 
-// NewRole создаёт валидную роль.
-// Валидирует:
-//   - code: обязателен, trimmed, lowercased (делегируется value.RoleCode снаружи)
-//   - name: обязателен, непустой после trim
-//   - description: необязателен
-//
-// Конструктор принимает уже нормализованный code (после value.NewRoleCode),
-// чтобы не дублировать валидацию.
 func NewRole(p NewRoleParams) (Role, error) {
 	name := strings.TrimSpace(p.Name)
 	if name == "" {

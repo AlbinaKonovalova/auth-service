@@ -9,9 +9,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/config/modules"
 )
 
-// Config — единый конфиг приложения.
-// Каждое поле — отдельный модульный конфиг из internal/config/modules.
-// Внешний API не меняется: cfg.Server, cfg.Database, cfg.Auth и т.д.
 type Config struct {
 	Server        modules.ServerConfig        `yaml:"server"`
 	Database      modules.DatabaseConfig      `yaml:"database"`
@@ -24,9 +21,6 @@ type Config struct {
 	PasswordReset modules.PasswordResetConfig `yaml:"password_reset"`
 }
 
-// Load читает yaml-файл, проставляет defaults, валидирует и возвращает готовый конфиг.
-// Единственный источник конфигурации — файл, путь к которому передаётся через -config.
-// Pipeline: loadFromFile → setDefaults → validate.
 func Load(path string) (*Config, error) {
 	cfg := &Config{}
 
@@ -51,7 +45,6 @@ func (c *Config) loadFromFile(path string) error {
 	return yaml.Unmarshal(data, c)
 }
 
-// setDefaults делегирует проставление defaults каждому модульному конфигу.
 func (c *Config) setDefaults() {
 	c.Server.ApplyDefaults()
 	c.Database.ApplyDefaults()
@@ -64,7 +57,6 @@ func (c *Config) setDefaults() {
 	c.PasswordReset.ApplyDefaults()
 }
 
-// validate делегирует валидацию каждому модульному конфигу.
 func (c *Config) validate() error {
 	if err := c.Server.Validate(); err != nil {
 		return err

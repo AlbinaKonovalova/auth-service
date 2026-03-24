@@ -70,7 +70,6 @@ func (m *mockPasswordResetRepo) MarkUsed(ctx context.Context, id uuid.UUID, used
 	return m.markUsedFn(ctx, id, usedAt)
 }
 
-// mockUserRepo реализует output.UserRepository
 type mockUserRepo struct {
 	updatePasswordFn    func(ctx context.Context, id uuid.UUID, hash string) error
 	findByIDFn          func(ctx context.Context, id uuid.UUID) (*entity.User, error)
@@ -109,7 +108,6 @@ func (m *mockUserRepo) List(_ context.Context, _ dto.UserListFilters) ([]entity.
 	return nil, 0, nil
 }
 
-// mockSessionRepo реализует output.RefreshSessionRepository
 type mockSessionRepo struct {
 	revokeAllFn func(ctx context.Context, userID uuid.UUID) error
 }
@@ -130,7 +128,6 @@ func (m *mockSessionRepo) FindByTokenHashForUpdate(_ context.Context, _ value.To
 func (m *mockSessionRepo) Revoke(_ context.Context, _ uuid.UUID) error                  { return nil }
 func (m *mockSessionRepo) DeleteExpiredAndRevoked(_ context.Context, _ uuid.UUID) error { return nil }
 
-// mockPasswordHasher реализует output.PasswordHasher
 type mockPasswordHasher struct {
 	hashFn func(password string) (string, error)
 }
@@ -143,7 +140,6 @@ func (m *mockPasswordHasher) Hash(password string) (string, error) {
 }
 func (m *mockPasswordHasher) Verify(_, _ string) (bool, error) { return true, nil }
 
-// mockTokenProvider реализует output.TokenProvider
 type mockTokenProvider struct{}
 
 func (m *mockTokenProvider) GenerateAccessToken(_ context.Context, _ value.AccessClaims) (string, int64, error) {
@@ -159,7 +155,6 @@ func (m *mockTokenProvider) GeneratePasswordResetToken(_ context.Context) (strin
 	return "raw-token", "hashed-token", nil
 }
 
-// mockTokenHasher реализует output.TokenHasher
 type mockTokenHasher struct{}
 
 func (m *mockTokenHasher) Hash(raw string) value.TokenHash {
@@ -167,7 +162,6 @@ func (m *mockTokenHasher) Hash(raw string) value.TokenHash {
 	return value.TokenHash("hashed-" + raw)
 }
 
-// mockMailer реализует output.Mailer
 type mockMailer struct {
 	sendFn func(ctx context.Context, toEmail, resetToken string) error
 }
@@ -179,7 +173,6 @@ func (m *mockMailer) SendPasswordResetEmail(ctx context.Context, toEmail, resetT
 	return m.sendFn(ctx, toEmail, resetToken)
 }
 
-// mockClock реализует output.Clock
 type mockClock struct{ now time.Time }
 
 func (m *mockClock) Now() time.Time { return m.now }
@@ -189,9 +182,6 @@ type mockUUIDGen struct{ id uuid.UUID }
 
 func (m *mockUUIDGen) New() uuid.UUID { return m.id }
 
-// inlineTxManager реализует output.TxManager: выполняет fn синхронно в том же goroutine.
-// Транзакционная атомарность в тестах моделируется через то, что все моки
-// вызываются через ту же closure — нет реальной БД, но порядок вызовов проверяется.
 type inlineTxManager struct {
 	// rollback: если fn вернула ошибку, txManager её пробрасывает как есть (как реальный Postgres).
 }
@@ -202,7 +192,6 @@ func (t *inlineTxManager) RunInTx(ctx context.Context, fn func(ctx context.Conte
 
 // ─── Builder ─────────────────────────────────────────────────────────────────
 
-// confirmBuilder собирает PasswordResetService с возможностью перекрыть отдельные моки.
 type confirmBuilder struct {
 	resetRepo   *mockPasswordResetRepo
 	userRepo    *mockUserRepo
@@ -255,11 +244,6 @@ func (b *confirmBuilder) build() *passwordreset.PasswordResetService {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-// TestConfirmPasswordReset_Success — успешный сброс пароля.
-// Проверяет, что при валидном token:
-//   - обновляется password hash пользователя
-//   - token помечается как used
-//   - все refresh sessions пользователя отзываются
 func TestConfirmPasswordReset_Success(t *testing.T) {
 	var (
 		passwordUpdated bool
@@ -321,8 +305,6 @@ func TestConfirmPasswordReset_Success(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_ExpiredToken — confirm с истёкшим token.
-// Проверяет, что истёкший token отклоняется до любых write-операций.
 func TestConfirmPasswordReset_ExpiredToken(t *testing.T) {
 	expiredNow := fixedToken.ExpiresAt.Add(1 * time.Second) // после ExpiresAt
 
@@ -357,8 +339,6 @@ func TestConfirmPasswordReset_ExpiredToken(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_UsedToken — confirm с уже использованным token.
-// Проверяет, что использованный token отклоняется до любых write-операций.
 func TestConfirmPasswordReset_UsedToken(t *testing.T) {
 	usedAt := fixedNow.Add(-5 * time.Minute)
 
@@ -393,8 +373,6 @@ func TestConfirmPasswordReset_UsedToken(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_UnknownToken — confirm с несуществующим token.
-// Проверяет, что ErrResetTokenNotFound возвращается без вызова write-операций.
 func TestConfirmPasswordReset_UnknownToken(t *testing.T) {
 	b := newConfirmBuilder()
 
@@ -425,8 +403,6 @@ func TestConfirmPasswordReset_UnknownToken(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_InvalidPassword — confirm с паролем, не прошедшим валидацию.
-// Проверяет, что слабый пароль отклоняется до вызова FindByTokenHashForUpdate.
 func TestConfirmPasswordReset_InvalidPassword(t *testing.T) {
 	b := newConfirmBuilder()
 
@@ -446,8 +422,6 @@ func TestConfirmPasswordReset_InvalidPassword(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_RevokeSessionsAfterSuccess — проверяет порядок write-операций.
-// Refresh sessions должны отзываться только после успешного UpdatePasswordHash и MarkUsed.
 func TestConfirmPasswordReset_RevokeSessionsAfterSuccess(t *testing.T) {
 	var callOrder []string
 
@@ -487,10 +461,6 @@ func TestConfirmPasswordReset_RevokeSessionsAfterSuccess(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_RollbackOnMarkUsedFailure — проверяет поведение при ошибке MarkUsed.
-// Если MarkUsed падает, весь сценарий должен вернуть ошибку (транзакция откатывается).
-// Это моделирует ситуацию параллельного confirm — второй confirm пытается снова пометить
-// token как used, но получает отказ от MarkUsed (0 RowsAffected → ErrResetTokenUsed).
 func TestConfirmPasswordReset_RollbackOnMarkUsedFailure(t *testing.T) {
 	var sessionsRevoked bool
 
@@ -519,12 +489,6 @@ func TestConfirmPasswordReset_RollbackOnMarkUsedFailure(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_ParallelConflictCaughtByLock — главный сценарий гонки.
-// Первый confirm получает lock и успешно завершается.
-// Второй confirm не может получить lock (FindByTokenHashForUpdate блокирует) —
-// в тестах это моделируется через то, что к моменту второго вызова token уже UsedAt != nil,
-// что соответствует реальному поведению после снятия блокировки в PostgreSQL:
-// второй confirm видит уже изменённую строку и получает ErrResetTokenUsed из EnsureUsable.
 func TestConfirmPasswordReset_ParallelConflictCaughtByLock(t *testing.T) {
 	usedAt := fixedNow
 
@@ -532,13 +496,10 @@ func TestConfirmPasswordReset_ParallelConflictCaughtByLock(t *testing.T) {
 
 	b := newConfirmBuilder()
 
-	// Первый вызов — token свежий, второй вызов — token уже used (постблокировочное состояние)
 	b.resetRepo.findForUpdateFn = func(_ context.Context, _ string) (*entity.PasswordResetToken, error) {
 		callCount++
 		tok := fixedToken
 		if callCount > 1 {
-			// После первого confirm — то, что второй увидит после снятия lock:
-			// token уже помечен, первый confirm отработал.
 			tok.UsedAt = &usedAt
 		}
 		return &tok, nil
@@ -546,7 +507,6 @@ func TestConfirmPasswordReset_ParallelConflictCaughtByLock(t *testing.T) {
 
 	svc := b.build()
 
-	// Первый confirm — должен пройти
 	err1 := svc.ConfirmPasswordReset(context.Background(), input.ConfirmPasswordResetInput{
 		Token:       "raw-token",
 		NewPassword: "ValidPassword1!",
@@ -555,7 +515,6 @@ func TestConfirmPasswordReset_ParallelConflictCaughtByLock(t *testing.T) {
 		t.Fatalf("first confirm: expected no error, got: %v", err1)
 	}
 
-	// Второй confirm тем же token — должен получить ErrResetTokenUsed
 	err2 := svc.ConfirmPasswordReset(context.Background(), input.ConfirmPasswordResetInput{
 		Token:       "raw-token",
 		NewPassword: "ValidPassword1!",
@@ -565,9 +524,6 @@ func TestConfirmPasswordReset_ParallelConflictCaughtByLock(t *testing.T) {
 	}
 }
 
-// TestConfirmPasswordReset_ExpiredCheckedBeforeUsed — порядок доменных проверок.
-// Истёкший token, который к тому же помечен как used, должен вернуть ErrResetTokenExpired,
-// а не ErrResetTokenUsed — истёкший токен не должен раскрывать, был ли он использован.
 func TestConfirmPasswordReset_ExpiredCheckedBeforeUsed(t *testing.T) {
 	usedAt := fixedNow.Add(-10 * time.Minute)
 	expiredNow := fixedToken.ExpiresAt.Add(1 * time.Second)
@@ -587,7 +543,6 @@ func TestConfirmPasswordReset_ExpiredCheckedBeforeUsed(t *testing.T) {
 		NewPassword: "ValidPassword1!",
 	})
 
-	// expired должен проверяться раньше used
 	if !errors.Is(err, domain.ErrResetTokenExpired) {
 		t.Fatalf("expected ErrResetTokenExpired (checked before used), got: %v", err)
 	}

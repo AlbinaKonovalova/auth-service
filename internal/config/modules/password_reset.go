@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// PasswordResetConfig хранит настройки сброса пароля.
 type PasswordResetConfig struct {
 	TTL     time.Duration `yaml:"ttl"`
 	BaseURL string        `yaml:"base_url"`

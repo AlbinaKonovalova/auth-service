@@ -8,25 +8,21 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/domain/service"
 )
 
-// AssignRoleInput — входные данные для назначения роли пользователю.
 type AssignRoleInput struct {
 	UserID   uuid.UUID
 	RoleCode string
 }
 
-// RevokeRoleInput — входные данные для отзыва роли у пользователя.
 type RevokeRoleInput struct {
 	UserID   uuid.UUID
 	RoleCode string
 }
 
-// AssignPermissionInput — входные данные для назначения permission роли.
 type AssignPermissionInput struct {
 	RoleCode       string
 	PermissionCode string
 }
 
-// RevokePermissionInput — входные данные для отзыва permission у роли.
 type RevokePermissionInput struct {
 	RoleCode       string
 	PermissionCode string

@@ -21,10 +21,6 @@ type NewPermissionParams struct {
 	Description string
 }
 
-// NewPermission создаёт валидный Permission.
-// Ожидает уже нормализованный и провалидированный code (после value.NewPermissionCode).
-// Валидирует:
-//   - description: обязателен, непустой после trim
 func NewPermission(p NewPermissionParams) (Permission, error) {
 	description := strings.TrimSpace(p.Description)
 	if description == "" {

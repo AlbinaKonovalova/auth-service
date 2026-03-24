@@ -11,15 +11,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/input"
 )
 
-// CreatePermission создаёт новый permission.
-// Сценарий выполняется в одной транзакции (read-check-write):
-//  1. доменная валидация permission code через value.NewPermissionCode
-//  2. доменный конструктор entity.NewPermission — валидирует description (обязателен), нормализует
-//  3. внутри tx — проверка уникальности code; если code занят — domain.ErrDuplicatePermissionCode
-//  4. внутри tx — вставка нового permission; при race unique violation в DB также domain.ErrDuplicatePermissionCode
-//
-// Итоговое представление формируется через domain/service.PermissionViewFromEntity —
-// единственный источник истины для маппинга entity.Permission в доменный result.
 func (s *PermissionService) CreatePermission(ctx context.Context, in input.CreatePermissionInput) (domainservice.PermissionView, error) {
 	permCode, err := value.NewPermissionCode(in.Code)
 	if err != nil {

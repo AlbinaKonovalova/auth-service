@@ -4,8 +4,6 @@ import (
 	"github.com/AlbinaKonovalova/auth-service/internal/ports/output"
 )
 
-// PermissionService реализует input.PermissionUseCase.
-// Оркестрирует сценарии управления справочником permissions.
 type PermissionService struct {
 	permRepo     output.PermissionRepository
 	rolePermRepo output.RolePermissionRepository

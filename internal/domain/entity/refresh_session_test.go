@@ -84,7 +84,6 @@ func TestRefreshSession_EnsureUsable_Expired(t *testing.T) {
 	assert.ErrorIs(t, s.EnsureUsable(testNow.Add(2*time.Hour)), domain.ErrRefreshTokenExpired)
 }
 
-// Revoked проверяется раньше Expired — если оба, побеждает Revoked.
 func TestRefreshSession_EnsureUsable_RevokedAndExpired_RevokedWins(t *testing.T) {
 	s, _ := entity.NewRefreshSession(uuid.New(), testUserID, value.TokenHash("h"), testNow, time.Hour)
 	revokedAt := testNow

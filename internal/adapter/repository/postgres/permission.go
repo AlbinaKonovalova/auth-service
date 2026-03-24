@@ -93,9 +93,6 @@ func (r *PermissionRepository) FindByCode(ctx context.Context, code string) (*en
 	return &p, nil
 }
 
-// FindByCodeForUpdate читает permission с блокировкой строки (SELECT ... FOR UPDATE).
-// Используется в delete-сценарии внутри транзакции — сериализует конкурентные delete
-// и фиксирует состояние permission на время read-check-delete.
 func (r *PermissionRepository) FindByCodeForUpdate(ctx context.Context, code string) (*entity.Permission, error) {
 	q := ExtractTx(ctx, r.db)
 
